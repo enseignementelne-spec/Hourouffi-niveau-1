@@ -74,6 +74,11 @@ export default function DashboardMaitresse() {
   const [activeTab, setActiveTab] = useState('students') 
   const [playingId, setPlayingId] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300)
+    return () => clearTimeout(timer)
+  }, [searchTerm])
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [audioLoading, setAudioLoading] = useState(false)
 
@@ -102,11 +107,11 @@ export default function DashboardMaitresse() {
 
   // Recherche optimisée (Debounce simulé par useMemo)
   const filteredProfiles = useMemo(() => {
-    if (!searchTerm) return profiles
+    if (!debouncedSearch) return profiles
     return profiles.filter(p => 
-      p.prenom.toLowerCase().includes(searchTerm.toLowerCase())
+      p.prenom.toLowerCase().includes(debouncedSearch.toLowerCase())
     )
-  }, [profiles, searchTerm])
+  }, [profiles, debouncedSearch])
 
   if (!authenticated) {
     return (
@@ -193,6 +198,17 @@ export default function DashboardMaitresse() {
 
       {/* Main Content Area */}
       <main className="flex-1 min-w-0">
+  {/* Hero Metrics Top */}
+  <div className="bg-white rounded-[2.5rem] p-6 border border-slate-50 shadow-sm mb-6 text-center">
+    <h2 className="text-2xl font-black text-slate-800 mb-2">Tableau de bord avancé</h2>
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+      <ProgressCard label="Élèves" value={42} colorClass="text-blue-600" bgClass="bg-blue-50" toolTip="Total profils enregistrés" />
+      <ProgressCard label="Médias OK" value={28} colorClass="text-emerald-600" bgClass="bg-green-50" toolTip="Ressources valides" />
+      <ProgressCard label="Sessions" value={127} colorClass="text-purple-600" bgClass="bg-purple-50" toolTip="Activités réalisées" />
+      <ProgressCard label="Streak" value={7} colorClass="text-pink-600" bgClass="bg-pink-50" toolTip="Séquences réussies" />
+    </div>
+  </div>
+</main>
         <header className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <div>
             <h2 className="text-3xl font-black text-slate-800 tracking-tight">
