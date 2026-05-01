@@ -119,8 +119,31 @@
   transform: rotateY(180deg);
 }
 
-/* Canvas drawing */
-.drawing-canvas {
-  touch-action: none;
-  cursor: crosshair;
+/* Premium Memory Card */
+.premium-memory-card {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  @apply cursor-pointer;
 }
+
+.premium-memory-card:hover {
+  transform: translateY(-4px) scale(1.02);
+}
+
+.memory-back-pattern {
+  background: #1a1a1a url('https://www.transparenttextures.com/patterns/dark-matter.png');
+  background-size: cover;
+  @apply border-4 border-brand-800 rounded-3xl flex items-center justify-center;
+}
+
+.memory-back-pattern::after {
+  content: '✨';
+  font-size: 2rem;
+  opacity: 0.3;
+}
+
+@media (max-width: 640px) {
+  .memory-back-pattern {
+    background-size: cover;
+  }
+}
+

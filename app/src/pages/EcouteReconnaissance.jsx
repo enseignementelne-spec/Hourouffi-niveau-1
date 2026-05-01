@@ -3,7 +3,7 @@ import { Navigate, Link } from 'react-router-dom'
 import { useProfileStore } from '../store/useProfileStore'
 import { useGameStore } from '../store/useGameStore'
 import { alphabet } from '../data/alphabet'
-import AudioButton from '../components/ui/AudioButton'
+import PremiumAudioPlayer from '../components/ui/PremiumAudioPlayer'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, RotateCcw, Trophy } from 'lucide-react'
@@ -135,11 +135,10 @@ export default function EcouteReconnaissance() {
 
           {/* Audio Button */}
           <div className="flex justify-center mb-8">
-            <AudioButton
-              audioPath={current.correct.audio}
-              speakText={current.correct.lettre}
+            <PremiumAudioPlayer
+              url={current.correct.audio}
+              fallbackText={current.correct.lettre}
               size="xl"
-              label={`استمع: ${current.correct.translit}`}
             />
           </div>
 

@@ -129,21 +129,19 @@ export default function MemoryLettres() {
               key={card.uid}
               onClick={() => handleFlip(i)}
               disabled={isFlipped || isMatched}
-              className={`aspect-square rounded-2xl border-2 transition-all duration-300 flex items-center justify-center p-2 ${
-                isMatched ? 'bg-emerald-50 border-emerald-300 opacity-70' :
-                showFace ? 'bg-white border-brand-300 shadow-lg' :
-                'bg-gradient-to-br from-brand-400 to-brand-600 border-brand-300 hover:shadow-lg hover:scale-105 cursor-pointer'
+              className={`aspect-square rounded-[2rem] border-2 transition-all duration-300 flex items-center justify-center p-2 premium-memory-card ${
+                isMatched ? 'bg-emerald-50 border-emerald-300 opacity-70 scale-95' :
+                showFace ? 'bg-white border-brand-300 shadow-xl' :
+                'memory-back-pattern'
               }`}
               whileTap={{ scale: 0.95 }}
             >
               {showFace ? (
-                <span className={`font-arabic ${card.type === 'lettre' ? 'text-3xl sm:text-4xl' : 'text-lg sm:text-xl text-slate-700'}`}
+                <span className={`font-arabic ${card.type === 'lettre' ? 'text-3xl sm:text-5xl' : 'text-lg sm:text-xl text-slate-700'}`}
                   style={{ color: card.color }} dir="rtl">
                   {card.display}
                 </span>
-              ) : (
-                <span className="text-white text-2xl font-arabic opacity-60">حـ</span>
-              )}
+              ) : null}
             </motion.button>
           )
         })}

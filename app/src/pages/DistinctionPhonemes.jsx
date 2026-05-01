@@ -3,7 +3,7 @@ import { Navigate, Link } from 'react-router-dom'
 import { useProfileStore } from '../store/useProfileStore'
 import { useGameStore } from '../store/useGameStore'
 import { phonemes } from '../data/phonemes'
-import AudioButton from '../components/ui/AudioButton'
+import PremiumAudioPlayer from '../components/ui/PremiumAudioPlayer'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, RotateCcw, Trophy } from 'lucide-react'
@@ -20,6 +20,17 @@ export default function DistinctionPhonemes() {
   const [showConfetti, setShowConfetti] = useState(false)
   const [gameOver, setGameOver] = useState(false)
   const [targetIsFirst, setTargetIsFirst] = useState(() => Math.random() > 0.5)
+
+  useEffect(() => {
+    // Tracking de performance pédagogique
+    import('../utils/auditingMetrics').then(({ AuditingMetrics }) => {
+      AuditingMetrics.track({
+        module: 'phoneme',
+        type: 'session-start',
+        component: 'DistinctionPhonemes'
+      })
+    })
+  }, [])
 
   if (!activeProfile) return <Navigate to="/" replace />
 
@@ -116,11 +127,10 @@ export default function DistinctionPhonemes() {
           <p className="font-arabic text-lg text-brand-600 mb-6" dir="rtl">أَيُّ صَوْتٍ تَسْمَعُ؟</p>
 
           <div className="flex justify-center mb-8">
-            <AudioButton
-              audioPath={current.audio}
-              speakText={`${current.lettre1.caractere} ${current.lettre2.caractere}`}
+            <PremiumAudioPlayer
+              url={current.audio}
+              fallbackText={`${current.lettre1.caractere} ${current.lettre2.caractere}`}
               size="xl"
-              label="استمع للأصوات"
             />
           </div>
 
