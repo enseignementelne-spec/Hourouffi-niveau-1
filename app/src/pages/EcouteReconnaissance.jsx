@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { useProfileStore } from '../store/useProfileStore'
 import { useGameStore } from '../store/useGameStore'
@@ -7,6 +7,8 @@ import PremiumAudioPlayer from '../components/ui/PremiumAudioPlayer'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, RotateCcw, Trophy } from 'lucide-react'
+import { playSuccess, playError, playVictory, playPoints } from '../utils/soundEffects'
+import { AuditingMetrics, estimateConfidence } from '../utils/auditingMetrics'
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
 
@@ -26,6 +28,10 @@ export default function EcouteReconnaissance() {
   const [gameOver, setGameOver] = useState(false)
   const [questions, setQuestions] = useState([])
 
+  // Timing
+  const sessionIdRef = useRef(`ecoute_${Date.now()}`)
+  const questionStartRef = useRef(Date.now())
+
   const generateQuestions = useCallback(() => {
     const qs = []
     for (let i = 0; i < TOTAL_QUESTIONS; i++) {
@@ -39,6 +45,21 @@ export default function EcouteReconnaissance() {
 
   useEffect(() => { setQuestions(generateQuestions()) }, [])
 
+  // Session management
+  useEffect(() => {
+    if (!activeProfile) return
+    sessionIdRef.current = `ecoute_${Date.now()}`
+    AuditingMetrics.startSession(sessionIdRef.current, activeProfile.id, 'ecoute')
+    return () => {
+      AuditingMetrics.endSession(sessionIdRef.current)
+    }
+  }, [activeProfile?.id])
+
+  // Reset question timer
+  useEffect(() => {
+    questionStartRef.current = Date.now()
+  }, [questionIndex])
+
   if (!activeProfile) return <Navigate to="/" replace />
   if (questions.length === 0) return null
 
@@ -50,18 +71,37 @@ export default function EcouteReconnaissance() {
     const correct = lettre.id === current.correct.id
     setIsCorrect(correct)
 
+    const responseTime = Date.now() - questionStartRef.current
+    const difficulty = 3 // Audio recognition is inherently moderate difficulty
+    const confidence = estimateConfidence(responseTime, difficulty)
+
     if (correct) {
       setScore(s => s + POINTS_PER_CORRECT)
       setShowConfetti(true)
       addPoints(POINTS_PER_CORRECT)
       addResult(activeProfile.id, { type: 'ecoute', correct: true, lettreId: current.correct.id })
+      playSuccess()
+      playPoints()
+      AuditingMetrics.track({
+        module: 'ecoute', type: 'correct', component: 'EcouteReconnaissance',
+        profileId: activeProfile.id, profileName: activeProfile.prenom,
+        metadata: { sessionId: sessionIdRef.current, responseTime, difficulty, confidence, lettreId: current.correct.id }
+      })
     } else {
       addResult(activeProfile.id, { type: 'ecoute', correct: false, lettreId: current.correct.id })
+      playError()
+      AuditingMetrics.track({
+        module: 'ecoute', type: 'error', component: 'EcouteReconnaissance',
+        profileId: activeProfile.id, profileName: activeProfile.prenom,
+        metadata: { sessionId: sessionIdRef.current, responseTime, difficulty, confidence, lettreId: current.correct.id }
+      })
     }
 
     setTimeout(() => {
       if (questionIndex + 1 >= TOTAL_QUESTIONS) {
         setGameOver(true)
+        playVictory()
+        AuditingMetrics.endSession(sessionIdRef.current)
       } else {
         setQuestionIndex(q => q + 1)
         setSelected(null)
@@ -77,6 +117,9 @@ export default function EcouteReconnaissance() {
     setSelected(null)
     setIsCorrect(null)
     setGameOver(false)
+    // New session for restart
+    sessionIdRef.current = `ecoute_${Date.now()}`
+    AuditingMetrics.startSession(sessionIdRef.current, activeProfile.id, 'ecoute')
   }
 
   if (gameOver) {

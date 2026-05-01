@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { useProfileStore } from '../store/useProfileStore'
 import { conversations } from '../data/conversations'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Volume2, MessageCircle, CheckCircle2 } from 'lucide-react'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
+import { playSuccess, playError, playVictory } from '../utils/soundEffects'
+import { AuditingMetrics, calculateDifficulty, estimateConfidence } from '../utils/auditingMetrics'
 
 export default function Conversation() {
   const activeProfile = useProfileStore(s => s.getActiveProfile())
@@ -14,7 +16,25 @@ export default function Conversation() {
   const [showConfetti, setShowConfetti] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
 
+  // Timing
+  const sessionIdRef = useRef(`conv_${Date.now()}`)
+  const roundStartRef = useRef(Date.now())
+
   if (!activeProfile) return <Navigate to="/" replace />
+
+  // Start session on mount
+  useEffect(() => {
+    sessionIdRef.current = `conv_${Date.now()}`
+    AuditingMetrics.startSession(sessionIdRef.current, activeProfile.id, 'conversation')
+    return () => {
+      AuditingMetrics.endSession(sessionIdRef.current)
+    }
+  }, [activeProfile.id])
+
+  // Reset round timer when round changes
+  useEffect(() => {
+    roundStartRef.current = Date.now()
+  }, [currentRound, currentScenario])
 
   const scenario = conversations[currentScenario]
   const round = scenario.rounds[currentRound]
@@ -23,7 +43,33 @@ export default function Conversation() {
     if (selectedOption !== null) return
     setSelectedOption(index)
 
+    const responseTime = Date.now() - roundStartRef.current
+    const difficulty = calculateDifficulty({
+      questionText: round.question,
+      optionCount: round.options.length,
+      hasAudio: !!round.questionAudio,
+      module: 'conversation'
+    })
+    const confidence = estimateConfidence(responseTime, difficulty)
+
     if (option.correct) {
+      playSuccess()
+      AuditingMetrics.track({
+        module: 'conversation',
+        type: 'correct',
+        component: 'Conversation',
+        profileId: activeProfile.id,
+        profileName: activeProfile.prenom,
+        metadata: {
+          sessionId: sessionIdRef.current,
+          responseTime,
+          difficulty,
+          confidence,
+          questionIndex: currentRound,
+          scenarioId: currentScenario,
+          scenarioTitle: scenario.title,
+        }
+      })
       if (currentRound + 1 < scenario.rounds.length) {
         setTimeout(() => {
           setCurrentRound(r => r + 1)
@@ -32,8 +78,26 @@ export default function Conversation() {
       } else {
         setShowConfetti(true)
         setIsCompleted(true)
+        playVictory()
       }
     } else {
+      playError()
+      AuditingMetrics.track({
+        module: 'conversation',
+        type: 'error',
+        component: 'Conversation',
+        profileId: activeProfile.id,
+        profileName: activeProfile.prenom,
+        metadata: {
+          sessionId: sessionIdRef.current,
+          responseTime,
+          difficulty,
+          confidence,
+          questionIndex: currentRound,
+          scenarioId: currentScenario,
+          scenarioTitle: scenario.title,
+        }
+      })
       setTimeout(() => setSelectedOption(null), 1500)
     }
   }

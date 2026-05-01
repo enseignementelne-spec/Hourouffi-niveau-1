@@ -6,6 +6,8 @@ import { lettresPrioritaires } from '../data/alphabet'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
 import { motion } from 'framer-motion'
 import { ArrowLeft, RotateCcw, Trophy } from 'lucide-react'
+import { playTap, playSuccess, playVictory, playPoints } from '../utils/soundEffects'
+import { AuditingMetrics } from '../utils/auditingMetrics'
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
 
@@ -55,6 +57,7 @@ export default function MemoryLettres() {
 
     const newFlipped = [...flipped, index]
     setFlipped(newFlipped)
+    playTap()
 
     if (newFlipped.length === 2) {
       setMoves(m => m + 1)
@@ -63,12 +66,16 @@ export default function MemoryLettres() {
         const newMatched = [...matched, cards[a].lettreId]
         setMatched(newMatched)
         setFlipped([])
+        playSuccess()
         if (newMatched.length === 6) {
           setTimerActive(false)
           setShowConfetti(true)
           const pts = Math.max(10, 120 - moves * 2)
           addPoints(pts)
           addResult(activeProfile.id, { type: 'memory', completed: true, moves, time: timer })
+          playVictory()
+          playPoints()
+          AuditingMetrics.track({ module: 'memory', type: 'complete', component: 'MemoryLettres', profileId: activeProfile.id, profileName: activeProfile.prenom, metadata: { moves, time: timer } })
           setTimeout(() => setGameOver(true), 1500)
         }
       } else {

@@ -6,13 +6,15 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   ArrowLeft, Lock, Download, Trash2, Star, BarChart3, 
   Volume2, Play, Users, CheckCircle2, AlertCircle, 
-  Settings, ChevronRight, Search, FileText, Menu, X, Loader2, Trophy
+  Settings, ChevronRight, Search, FileText, Menu, X, Loader2, Trophy, Activity
 } from 'lucide-react'
 import { alphabet } from '../data/alphabet'
 import { phonemes } from '../data/phonemes'
 import { conversations } from '../data/conversations'
+import { categories } from '../data/vocabulaire'
 import { jsPDF } from 'jspdf'
 import 'jspdf-autotable'
+import { AuditingMetrics } from '../utils/auditingMetrics'
 
 const DEFAULT_PIN = '2026'
 const PIN_STORAGE_KEY = 'hurufi-teacher-pin'
@@ -148,7 +150,294 @@ const generateClassReport = (profiles, getStats) => {
   doc.save(`Rapport_Classe_Hurufi_${date.replace(/\//g, '-')}.pdf`)
 }
 
-// --- HELPER COMPONENTS ---
+const VALIDATION_THRESHOLD = 0.6 // 60%
+
+const MODULE_CONFIG = [
+  { key: 'ecoute',   name: 'Ecoute & Reconnaissance', max: 20, valueKey: 'correct',   emoji: 'Ecoute' },
+  { key: 'memory',   name: 'Jeu de Memoire',          max: 10, valueKey: 'completed', emoji: 'Memoire' },
+  { key: 'phonemes', name: 'Distinction Phonemes',     max: 6,  valueKey: 'correct',   emoji: 'Phonemes' },
+  { key: 'tracage',  name: 'Tracage des Lettres',      max: 12, valueKey: 'completed', emoji: 'Trace' },
+  { key: 'flashcards', name: 'Flashcards Vocabulaire', max: 50, valueKey: 'vus',       emoji: 'Flash' },
+]
+
+const generateStudentReport = (student, stats, profileSummary) => {
+  const doc = new jsPDF()
+  const w = doc.internal.pageSize.getWidth()
+  const date = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
+
+  // ===== HEADER =====
+  doc.setFillColor(13, 148, 136) // Teal-600
+  doc.rect(0, 0, w, 48, 'F')
+  
+  // Decorative line
+  doc.setFillColor(245, 158, 11) // Amber
+  doc.rect(0, 48, w, 2, 'F')
+
+  doc.setTextColor(255, 255, 255)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(22)
+  doc.text('RAPPORT DE PROGRESSION', w / 2, 20, { align: 'center' })
+  
+  doc.setFontSize(36)
+  doc.text(student.prenom.toUpperCase(), w / 2, 38, { align: 'center' })
+
+  // Sub-header bar
+  doc.setFillColor(248, 250, 252)
+  doc.rect(0, 50, w, 16, 'F')
+  doc.setTextColor(100, 116, 139)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.text(`Date : ${date}`, 15, 60)
+  doc.text(`Niveau : ${student.niveau}`, 80, 60)
+  doc.text(`Programme : HURUFI 2026`, w - 15, 60, { align: 'right' })
+
+  // ===== SECTION 1 : RESUME GLOBAL =====
+  let y = 76
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(13)
+  doc.setTextColor(15, 23, 42)
+  doc.text('1. RESUME GLOBAL', 15, y)
+  
+  y += 4
+  doc.setDrawColor(20, 184, 166)
+  doc.setLineWidth(1)
+  doc.line(15, y, 60, y)
+
+  // Compute global metrics
+  const moduleResults = MODULE_CONFIG.map(mod => {
+    const value = stats[mod.key]?.[mod.valueKey] || 0
+    const pct = Math.min(100, Math.round((value / mod.max) * 100))
+    const validated = pct >= VALIDATION_THRESHOLD * 100
+    return { ...mod, value, pct, validated }
+  })
+  
+  const modulesAttempted = moduleResults.filter(m => m.value > 0)
+  const modulesValidated = moduleResults.filter(m => m.validated && m.value > 0)
+  const globalSuccessRate = modulesAttempted.length > 0
+    ? Math.round(modulesAttempted.reduce((s, m) => s + m.pct, 0) / modulesAttempted.length)
+    : 0
+
+  y += 10
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(10)
+  doc.setTextColor(71, 85, 105)
+
+  // KPI boxes
+  const kpis = [
+    { label: 'Points Etoiles', value: `${student.pointsTotal}`, color: [245, 158, 11] },
+    { label: 'Sessions', value: `${stats.totalSessions}`, color: [59, 130, 246] },
+    { label: 'Serie Active', value: `${stats.streak} jours`, color: [239, 68, 68] },
+    { label: 'Taux Global', value: `${globalSuccessRate}%`, color: globalSuccessRate >= 60 ? [16, 185, 129] : [239, 68, 68] },
+  ]
+
+  const boxW = (w - 40) / 4
+  kpis.forEach((kpi, i) => {
+    const bx = 15 + i * (boxW + 4)
+    // Box bg
+    doc.setFillColor(248, 250, 252)
+    doc.roundedRect(bx, y, boxW, 22, 3, 3, 'F')
+    // Label
+    doc.setFontSize(7)
+    doc.setTextColor(148, 163, 184)
+    doc.setFont('helvetica', 'bold')
+    doc.text(kpi.label.toUpperCase(), bx + boxW / 2, y + 7, { align: 'center' })
+    // Value
+    doc.setFontSize(14)
+    doc.setTextColor(...kpi.color)
+    doc.text(kpi.value, bx + boxW / 2, y + 18, { align: 'center' })
+  })
+
+  // ===== SECTION 2 : DETAIL PAR MODULE =====
+  y += 36
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(13)
+  doc.setTextColor(15, 23, 42)
+  doc.text('2. DETAIL PAR MODULE', 15, y)
+  
+  y += 4
+  doc.setDrawColor(20, 184, 166)
+  doc.line(15, y, 60, y)
+  y += 4
+
+  // Validation legend
+  doc.setFontSize(8)
+  doc.setTextColor(148, 163, 184)
+  doc.setFont('helvetica', 'normal')
+  doc.text('Seuil de validation : 60% de reussite minimum | Au moins 1 exercice tente', 15, y + 4)
+
+  const tableBody = moduleResults.map(m => {
+    const status = m.value === 0 ? 'Non tente' : m.validated ? 'VALIDE' : 'En cours'
+    return [
+      m.name,
+      `${m.value} / ${m.max}`,
+      `${m.pct}%`,
+      status
+    ]
+  })
+
+  doc.autoTable({
+    startY: y + 8,
+    head: [['Module', 'Exercices', 'Taux (%)', 'Statut']],
+    body: tableBody,
+    headStyles: { 
+      fillColor: [15, 23, 42], 
+      textColor: [255, 255, 255],
+      fontSize: 9,
+      fontStyle: 'bold',
+      cellPadding: 4
+    },
+    bodyStyles: { fontSize: 9, cellPadding: 4 },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    columnStyles: {
+      0: { fontStyle: 'bold' },
+      2: { halign: 'center' },
+      3: { halign: 'center', fontStyle: 'bold' }
+    },
+    didParseCell: (data) => {
+      if (data.section === 'body' && data.column.index === 3) {
+        const val = data.cell.raw
+        if (val === 'VALIDE') {
+          data.cell.styles.textColor = [16, 185, 129]
+        } else if (val === 'En cours') {
+          data.cell.styles.textColor = [245, 158, 11]
+        } else {
+          data.cell.styles.textColor = [148, 163, 184]
+        }
+      }
+      // Color the percentage
+      if (data.section === 'body' && data.column.index === 2) {
+        const pct = parseInt(data.cell.raw)
+        if (pct >= 60) data.cell.styles.textColor = [16, 185, 129]
+        else if (pct > 0) data.cell.styles.textColor = [245, 158, 11]
+      }
+    },
+    margin: { left: 15, right: 15 },
+  })
+
+  // ===== SECTION 3 : METRIQUES COMPORTEMENTALES =====
+  y = doc.lastAutoTable.finalY + 12
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(13)
+  doc.setTextColor(15, 23, 42)
+  doc.text('3. METRIQUES COMPORTEMENTALES', 15, y)
+  
+  y += 4
+  doc.setDrawColor(20, 184, 166)
+  doc.line(15, y, 75, y)
+  y += 8
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.setTextColor(71, 85, 105)
+
+  if (profileSummary) {
+    const lines = [
+      `Temps de reponse moyen : ${profileSummary.avgResponseTime ? (profileSummary.avgResponseTime / 1000).toFixed(1) + 's' : 'Non disponible'}`,
+      `Module favori : ${profileSummary.favoriteModule || 'Aucun'}`,
+      `Total evenements traces : ${profileSummary.totalEvents}`,
+      `Reponses correctes : ${profileSummary.correctEvents} | Erreurs : ${profileSummary.errorEvents}`,
+      `Premiere activite : ${profileSummary.firstActivity ? new Date(profileSummary.firstActivity).toLocaleDateString('fr-FR') : '-'}`,
+      `Derniere activite : ${profileSummary.lastActivity ? new Date(profileSummary.lastActivity).toLocaleDateString('fr-FR') : '-'}`,
+    ]
+    if (profileSummary.confidenceDist) {
+      const cd = profileSummary.confidenceDist
+      const total = cd.high + cd.medium + cd.low
+      if (total > 0) {
+        lines.push(`Confiance : Haute ${cd.high} | Moyenne ${cd.medium} | Basse ${cd.low}`)
+      }
+    }
+    lines.forEach((line, i) => {
+      doc.text(`• ${line}`, 20, y + i * 6)
+    })
+    y += lines.length * 6 + 6
+  } else {
+    doc.text('Aucune donnee comportementale disponible pour cet eleve.', 20, y)
+    y += 10
+  }
+
+  // ===== SECTION 4 : RECOMMANDATIONS =====
+  y += 4
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(13)
+  doc.setTextColor(15, 23, 42)
+  doc.text('4. RECOMMANDATIONS', 15, y)
+  
+  y += 4
+  doc.setDrawColor(20, 184, 166)
+  doc.line(15, y, 60, y)
+  y += 8
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.setTextColor(71, 85, 105)
+
+  const weakModules = moduleResults.filter(m => m.value > 0 && !m.validated)
+  const notAttempted = moduleResults.filter(m => m.value === 0)
+
+  if (weakModules.length === 0 && notAttempted.length === 0) {
+    doc.setTextColor(16, 185, 129)
+    doc.text('Excellent ! Tous les modules tentes sont valides. Continuer ainsi !', 20, y)
+    y += 8
+  } else {
+    if (weakModules.length > 0) {
+      doc.setTextColor(245, 158, 11)
+      doc.text('Modules a renforcer (taux < 60%) :', 20, y)
+      y += 6
+      doc.setTextColor(71, 85, 105)
+      weakModules.forEach(m => {
+        doc.text(`  - ${m.name} : ${m.pct}% (objectif : 60%)`, 25, y)
+        y += 5
+      })
+      y += 3
+    }
+    if (notAttempted.length > 0) {
+      doc.setTextColor(148, 163, 184)
+      doc.text('Modules non encore explores :', 20, y)
+      y += 6
+      notAttempted.forEach(m => {
+        doc.text(`  - ${m.name}`, 25, y)
+        y += 5
+      })
+    }
+  }
+
+  // ===== VALIDATION STAMP =====
+  const validated = modulesValidated.length
+  const total = modulesAttempted.length
+
+  y += 10
+  if (total > 0 && validated === total) {
+    doc.setFillColor(16, 185, 129)
+    doc.roundedRect(w / 2 - 45, y, 90, 18, 4, 4, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(12)
+    doc.text('TOUS LES MODULES VALIDES', w / 2, y + 12, { align: 'center' })
+  } else if (total > 0) {
+    doc.setFillColor(245, 158, 11)
+    doc.roundedRect(w / 2 - 45, y, 90, 18, 4, 4, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(11)
+    doc.text(`${validated}/${total} MODULES VALIDES`, w / 2, y + 12, { align: 'center' })
+  }
+
+  // ===== FOOTER =====
+  const pageH = doc.internal.pageSize.getHeight()
+  doc.setDrawColor(226, 232, 240)
+  doc.setLineWidth(0.5)
+  doc.line(15, pageH - 22, w - 15, pageH - 22)
+  
+  doc.setTextColor(148, 163, 184)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7)
+  doc.text(`Rapport genere automatiquement par HURUFI Pro | ${date}`, 15, pageH - 15)
+  doc.text('Document confidentiel - Usage pedagogique exclusif', w - 15, pageH - 15, { align: 'right' })
+
+  doc.save(`Rapport_${student.prenom}_${new Date().toISOString().slice(0, 10)}.pdf`)
+}
+
+
 
 function ResourceStatus({ url, type }) {
   const [status, setStatus] = useState('loading')
@@ -308,13 +597,14 @@ export default function DashboardMaitresse() {
 
   const menuItems = [
     { id: 'students', label: 'Suivi des élèves', icon: Users, color: 'text-blue-500' },
+    { id: 'analytics', label: 'Analytique', icon: Activity, color: 'text-amber-500' },
     { id: 'audio', label: 'Audit des sons', icon: Volume2, color: 'text-purple-500' },
     { id: 'assets', label: 'État des médias', icon: FileText, color: 'text-emerald-500' },
     { id: 'settings', label: 'Paramètres', icon: Settings, color: 'text-slate-500' },
   ]
 
   return (
-    <div className="flex flex-col md:flex-row min-h-[90vh] gap-6" dir="ltr">
+    <div className="flex flex-col md:flex-row min-h-[90vh] gap-6">
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
         <h1 className="font-black text-slate-800 text-lg">Hurûfî Pro</h1>
@@ -365,14 +655,14 @@ export default function DashboardMaitresse() {
             <h2 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">Tableau de bord Pro</h2>
             <p className="text-slate-400 font-medium">Contrôle pédagogique avancé et certification</p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full md:w-auto">
+<div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full md:w-auto">
             <div className="bg-blue-50 px-5 py-3 rounded-2xl border border-blue-100 flex flex-col items-center">
               <span className="text-[10px] font-black text-blue-400 uppercase">Élèves</span>
               <span className="text-xl font-black text-blue-700">{profiles.length}</span>
             </div>
             <div className="bg-emerald-50 px-5 py-3 rounded-2xl border border-emerald-100 flex flex-col items-center">
-              <span className="text-[10px] font-black text-emerald-400 uppercase">Médias</span>
-              <span className="text-xl font-black text-emerald-700">OK</span>
+              <span className="text-[10px] font-black text-emerald-400 uppercase">Médias OK</span>
+              <span className="text-xl font-black text-emerald-700">{alphabet.length + categories.reduce((acc, c) => acc + c.mots.length, 0)}</span>
             </div>
             <div className="bg-purple-50 px-5 py-3 rounded-2xl border border-purple-100 flex flex-col items-center">
               <span className="text-[10px] font-black text-purple-400 uppercase">Stats</span>
@@ -444,6 +734,14 @@ export default function DashboardMaitresse() {
                               <div>
                                 <div className="flex items-center gap-3">
                                   <h3 className="text-2xl font-black text-slate-800 tracking-tight">{p.prenom}</h3>
+                                  <button 
+                                    onClick={() => generateStudentReport(p, stats, AuditingMetrics.getProfileSummary(p.id))}
+                                    title="Exporter le rapport de progression"
+                                    className="p-2 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white transition-all shadow-sm flex items-center gap-1.5"
+                                  >
+                                    <FileText className="h-3.5 w-3.5" />
+                                    <span className="text-[10px] font-black uppercase">Rapport</span>
+                                  </button>
                                   <button 
                                     onClick={() => generateDiploma(p, stats)}
                                     title="Générer un diplôme"
@@ -551,70 +849,280 @@ export default function DashboardMaitresse() {
 
             {activeTab === 'assets' && (
               <div className="bg-white rounded-[2.5rem] card-shadow overflow-hidden border border-slate-100">
-                <div className="p-10 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+<div className="p-10 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
                    <div className="flex gap-4">
                       <div className="bg-emerald-100 text-emerald-600 px-4 py-2 rounded-xl text-xs font-black">MÉDIA OK</div>
                       <div className="bg-rose-100 text-rose-600 px-4 py-2 rounded-xl text-xs font-black">MANQUANT</div>
                    </div>
-                   <div className="text-right" dir="rtl">
-                     <h3 className="text-2xl font-black text-slate-800 mb-1">بيان حالة الوسائط</h3>
-                     <p className="text-slate-400 text-sm font-bold">Vérification de l'intégrité des fichiers serveurs.</p>
+                   <div className="text-right">
+                      <h3 className="text-2xl font-black text-slate-800 mb-1">بيان حالة الوسائط</h3>
+                      <p className="text-slate-400 text-sm font-bold">Vérification de l'intégrité des fichiers serveurs.</p>
                    </div>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-right" dir="rtl">
-                    <thead className="bg-white">
-                      <tr className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] border-b border-slate-50">
-                        <th className="p-8">المادة (Item)</th>
-                        <th className="p-8 text-center">الصوت (Audio)</th>
-                        <th className="p-8 text-center">الصورة (Image)</th>
-                        <th className="p-8">المسار (Path)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      <tr className="bg-brand-50/50"><td colSpan="4" className="p-4 font-black text-brand-700 text-xs uppercase tracking-widest px-8">Section Alphabet</td></tr>
-                      {alphabet.slice(0, 28).map(l => (
-                        <tr key={l.id} className="hover:bg-slate-50/50 transition-colors group">
-                          <td className="p-6 px-8">
-                            <span className="font-arabic font-black text-2xl text-slate-800 ml-3">{l.lettre}</span> 
-                            <span className="text-xs text-slate-400 font-bold">({l.translit})</span>
-                          </td>
-                          <td className="p-6 text-center"><ResourceStatus url={l.audio} type="audio" /></td>
-                          <td className="p-6 text-center"><ResourceStatus url={`resources/images/lettres/lettre_${l.translit.toLowerCase()}.png`} type="image" /></td>
-                          <td className="p-6 text-[10px] text-slate-300 font-mono group-hover:text-slate-500 transition-colors">{l.audio}</td>
-                        </tr>
-                      ))}
+<div className="overflow-x-auto">
+                   <table className="w-full text-right" dir="rtl">
+                     <thead className="bg-white">
+                       <tr className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] border-b border-slate-50">
+                         <th className="p-8">المادة (Item)</th>
+                         <th className="p-8 text-center">الصوت (Audio)</th>
+                         <th className="p-8 text-center">الصورة (Image)</th>
+                         <th className="p-8 text-center">الإجراءات (Actions)</th>
+                         <th className="p-8">المسار (Path)</th>
+                       </tr>
+                     </thead>
+                     <tbody className="divide-y divide-slate-50">
+                       <tr className="bg-brand-50/50"><td colSpan="5" className="p-4 font-black text-brand-700 text-xs uppercase tracking-widest px-8">Section Alphabet</td></tr>
+                       {alphabet.slice(0, 28).map(l => (
+                         <tr key={l.id} className="hover:bg-slate-50/50 transition-colors group">
+                           <td className="p-6 px-8">
+                             <span className="font-arabic font-black text-2xl text-slate-800 ml-3">{l.lettre}</span> 
+                             <span className="text-xs text-slate-400 font-bold">({l.translit})</span>
+                           </td>
+                           <td className="p-6 text-center"><ResourceStatus url={l.audio} type="audio" /></td>
+                           <td className="p-6 text-center"><ResourceStatus url={`resources/images/lettres/lettre_${l.translit.toLowerCase()}.png`} type="image" /></td>
+                           <td className="p-6 text-center">
+                             <button 
+                               onClick={() => playPreview(l.audio, `alpha-${l.id}`)}
+                               className="p-2 rounded-lg bg-brand-50 text-brand-600 hover:bg-brand-600 hover:text-white transition-all"
+                               aria-label={`Tester ${l.lettre}`}
+                             >
+                               {playingId === `alpha-${l.id}` && audioLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+                             </button>
+                           </td>
+                           <td className="p-6 text-[10px] text-slate-300 font-mono group-hover:text-slate-500 transition-colors">{l.audio}</td>
+                         </tr>
+                       ))}
 
-                      {categories.map(cat => (
-                        <React.Fragment key={cat.id}>
-                          <tr className="bg-slate-50/50">
-                            <td colSpan="4" className="p-4 font-black text-brand-700 text-xs uppercase tracking-widest px-8">{cat.emoji} {cat.nomAr}</td>
-                          </tr>
-                          {cat.mots.map((m, idx) => (
-                            <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
-                              <td className="p-6 px-8 flex items-center gap-3">
-                                {cat.id === 'nombres' && (
-                                  <span className="bg-slate-100 px-2 py-1 rounded text-xs font-black text-slate-400 border border-slate-200">{m.fr}</span>
-                                )}
-                                <span className="font-arabic font-black text-xl text-slate-800">{m.ar}</span> 
-                                <span className="text-[10px] text-slate-400 font-bold">({m.fr})</span>
-                              </td>
-                              <td className="p-6 text-center"><ResourceStatus url={m.audio} type="audio" /></td>
-                              <td className="p-6 text-center"><ResourceStatus url={m.image} type="image" /></td>
-                              <td className="p-6 text-[10px] text-slate-300 font-mono group-hover:text-brand-600 transition-colors">
-                                <span className="bg-slate-50 px-2 py-1 rounded border border-slate-100 break-all inline-block max-w-[250px]">
-                                  {m.image}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                       {categories.map(cat => (
+                         <React.Fragment key={cat.id}>
+                           <tr className="bg-slate-50/50">
+                             <td colSpan="5" className="p-4 font-black text-brand-700 text-xs uppercase tracking-widest px-8">{cat.emoji} {cat.nomAr}</td>
+                           </tr>
+                           {cat.mots.map((m, idx) => (
+                             <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
+                               <td className="p-6 px-8 flex items-center gap-3">
+                                 {cat.id === 'nombres' && (
+                                   <span className="bg-slate-100 px-2 py-1 rounded text-xs font-black text-slate-400 border border-slate-200">{m.fr}</span>
+                                 )}
+                                 <span className="font-arabic font-black text-xl text-slate-800">{m.ar}</span> 
+                                 <span className="text-[10px] text-slate-400 font-bold">({m.fr})</span>
+                               </td>
+                               <td className="p-6 text-center"><ResourceStatus url={m.audio} type="audio" /></td>
+                               <td className="p-6 text-center"><ResourceStatus url={m.image} type="image" /></td>
+                               <td className="p-6 text-center">
+                                 <button 
+                                   onClick={() => playPreview(m.audio, `mot-${cat.id}-${idx}`)}
+                                   className="p-2 rounded-lg bg-brand-50 text-brand-600 hover:bg-brand-600 hover:text-white transition-all"
+                                   aria-label={`Tester ${m.fr}`}
+                                 >
+                                   {playingId === `mot-${cat.id}-${idx}` && audioLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+                                 </button>
+                               </td>
+                               <td className="p-6 text-[10px] text-slate-300 font-mono group-hover:text-brand-600 transition-colors">
+                                 <span className="bg-slate-50 px-2 py-1 rounded border border-slate-100 break-all inline-block max-w-[250px]">
+                                   {m.image}
+                                 </span>
+                               </td>
+                             </tr>
+                           ))}
+                         </React.Fragment>
+                       ))}
+                     </tbody>
+                   </table>
+                 </div>
               </div>
             )}
+
+            {activeTab === 'analytics' && (() => {
+              const modulePerf = AuditingMetrics.getModulePerformance()
+              const classSummary = AuditingMetrics.getClassSummary()
+              const struggling = AuditingMetrics.getStrugglingProfiles()
+
+              const MODULE_LABELS = {
+                ecoute: { name: 'Écoute', emoji: '🎧' },
+                memory: { name: 'Mémoire', emoji: '🧠' },
+                phonemes: { name: 'Phonèmes', emoji: '👂' },
+                tracage: { name: 'Tracé', emoji: '✏️' },
+                flashcards: { name: 'Flashcards', emoji: '📷' },
+                conversation: { name: 'Conversation', emoji: '💬' },
+              }
+
+              const formatMs = (ms) => ms ? `${(ms / 1000).toFixed(1)}s` : '—'
+
+              return (
+                <div className="space-y-8">
+                  {/* KPIs */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="bg-white rounded-[2rem] p-6 border border-slate-100 card-shadow text-center">
+                      <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Total Événements</p>
+                      <p className="text-3xl font-black text-slate-800">{classSummary.totalEvents}</p>
+                    </div>
+                    <div className="bg-white rounded-[2rem] p-6 border border-slate-100 card-shadow text-center">
+                      <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Profils Actifs</p>
+                      <p className="text-3xl font-black text-blue-600">{classSummary.totalProfiles}</p>
+                    </div>
+                    <div className="bg-white rounded-[2rem] p-6 border border-slate-100 card-shadow text-center">
+                      <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Temps Moyen</p>
+                      <p className="text-3xl font-black text-amber-600">{formatMs(classSummary.avgResponseTime)}</p>
+                    </div>
+                    <div className="bg-white rounded-[2rem] p-6 border border-slate-100 card-shadow text-center">
+                      <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Alertes</p>
+                      <p className={`text-3xl font-black ${struggling.length > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                        {struggling.length > 0 ? `⚠️ ${struggling.length}` : '✅ 0'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Struggling Students Alert */}
+                  {struggling.length > 0 && (
+                    <div className="bg-rose-50 rounded-[2rem] p-6 border border-rose-200">
+                      <h3 className="text-lg font-black text-rose-700 mb-3 flex items-center gap-2">
+                        <AlertCircle className="h-5 w-5" /> Élèves en difficulté
+                      </h3>
+                      <p className="text-sm text-rose-600 font-medium mb-4">Ces élèves ont un taux de réussite inférieur à 40% :</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {struggling.map(p => (
+                          <div key={p.profileId} className="bg-white rounded-2xl p-4 border border-rose-100 flex items-center justify-between">
+                            <div>
+                              <p className="font-black text-slate-800">{p.profileName || p.profileId}</p>
+                              <p className="text-xs text-slate-400">{p.correctEvents + p.errorEvents} interactions</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-2xl font-black text-rose-500">{p.successRate}%</p>
+                              <p className="text-[10px] text-rose-400 font-bold uppercase">Réussite</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Module Performance Table */}
+                  <div className="bg-white rounded-[2rem] card-shadow border border-slate-100 overflow-hidden">
+                    <div className="p-6 border-b border-slate-50">
+                      <h3 className="text-lg font-black text-slate-800">Performance par Module</h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-slate-50">
+                            <th className="text-left px-6 py-3 font-black text-slate-500 uppercase text-xs">Module</th>
+                            <th className="text-center px-4 py-3 font-black text-slate-500 uppercase text-xs">Interactions</th>
+                            <th className="text-center px-4 py-3 font-black text-emerald-500 uppercase text-xs">✅ Correct</th>
+                            <th className="text-center px-4 py-3 font-black text-rose-500 uppercase text-xs">❌ Erreurs</th>
+                            <th className="text-center px-4 py-3 font-black text-blue-500 uppercase text-xs">Taux</th>
+                            <th className="text-center px-4 py-3 font-black text-amber-500 uppercase text-xs">⏱ Temps Moy.</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(modulePerf).map(([mod, data]) => (
+                            <tr key={mod} className="border-t border-slate-50 hover:bg-slate-25">
+                              <td className="px-6 py-4 font-bold text-slate-700">
+                                <span className="mr-2">{MODULE_LABELS[mod]?.emoji}</span>
+                                {MODULE_LABELS[mod]?.name || mod}
+                              </td>
+                              <td className="px-4 py-4 text-center font-medium text-slate-600">{data.totalInteractions}</td>
+                              <td className="px-4 py-4 text-center font-bold text-emerald-600">{data.correct}</td>
+                              <td className="px-4 py-4 text-center font-bold text-rose-500">{data.errors}</td>
+                              <td className="px-4 py-4 text-center">
+                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-black ${
+                                  data.successRate >= 70 ? 'bg-emerald-50 text-emerald-600' :
+                                  data.successRate >= 40 ? 'bg-amber-50 text-amber-600' :
+                                  data.totalInteractions === 0 ? 'bg-slate-50 text-slate-400' :
+                                  'bg-rose-50 text-rose-600'
+                                }`}>
+                                  {data.totalInteractions > 0 ? `${data.successRate}%` : '—'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4 text-center font-medium text-amber-600">{formatMs(data.avgResponseTime)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Per-Student Performance */}
+                  {classSummary.profiles.length > 0 && (
+                    <div className="bg-white rounded-[2rem] card-shadow border border-slate-100 overflow-hidden">
+                      <div className="p-6 border-b border-slate-50">
+                        <h3 className="text-lg font-black text-slate-800">Performance par Élève</h3>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="bg-slate-50">
+                              <th className="text-left px-6 py-3 font-black text-slate-500 uppercase text-xs">Élève</th>
+                              <th className="text-center px-4 py-3 font-black text-slate-500 uppercase text-xs">Events</th>
+                              <th className="text-center px-4 py-3 font-black text-blue-500 uppercase text-xs">Taux</th>
+                              <th className="text-center px-4 py-3 font-black text-amber-500 uppercase text-xs">⏱ Temps Moy.</th>
+                              <th className="text-center px-4 py-3 font-black text-purple-500 uppercase text-xs">Module Favori</th>
+                              <th className="text-center px-4 py-3 font-black text-slate-500 uppercase text-xs">Dernière Activité</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {classSummary.profiles.map(p => (
+                              <tr key={p.profileId} className="border-t border-slate-50 hover:bg-slate-25">
+                                <td className="px-6 py-4 font-bold text-slate-700">{p.profileName || p.profileId}</td>
+                                <td className="px-4 py-4 text-center font-medium text-slate-600">{p.totalEvents}</td>
+                                <td className="px-4 py-4 text-center">
+                                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-black ${
+                                    p.successRate >= 70 ? 'bg-emerald-50 text-emerald-600' :
+                                    p.successRate >= 40 ? 'bg-amber-50 text-amber-600' :
+                                    'bg-rose-50 text-rose-600'
+                                  }`}>
+                                    {p.successRate}%
+                                  </span>
+                                </td>
+                                <td className="px-4 py-4 text-center font-medium text-amber-600">{formatMs(p.avgResponseTime)}</td>
+                                <td className="px-4 py-4 text-center">
+                                  <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-lg">
+                                    {MODULE_LABELS[p.favoriteModule]?.emoji} {MODULE_LABELS[p.favoriteModule]?.name || p.favoriteModule || '—'}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-4 text-center text-xs text-slate-400 font-medium">
+                                  {p.lastActivity ? new Date(p.lastActivity).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Export */}
+                  <div className="flex gap-3 justify-center">
+                    <button
+                      onClick={() => {
+                        const data = AuditingMetrics.exportJSON()
+                        const blob = new Blob([data], { type: 'application/json' })
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = `hurufi-analytics-${new Date().toISOString().slice(0, 10)}.json`
+                        a.click()
+                        URL.revokeObjectURL(url)
+                      }}
+                      className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-amber-500 text-white font-bold text-sm hover:bg-amber-600 shadow-lg shadow-amber-100 transition-all"
+                    >
+                      <Download className="h-4 w-4" /> Exporter JSON
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm('Effacer toutes les métriques analytiques ?')) {
+                          AuditingMetrics.clear()
+                          location.reload()
+                        }
+                      }}
+                      className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-300 transition-all"
+                    >
+                      <Trash2 className="h-4 w-4" /> Réinitialiser
+                    </button>
+                  </div>
+                </div>
+              )
+            })()}
 
             {activeTab === 'settings' && (
               <div className="max-w-2xl mx-auto space-y-6 pt-10 text-center">

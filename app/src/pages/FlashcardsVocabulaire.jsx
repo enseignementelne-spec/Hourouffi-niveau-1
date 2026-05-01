@@ -6,6 +6,8 @@ import { categories } from '../data/vocabulaire'
 import AudioButton from '../components/ui/AudioButton'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react'
+import { playTap, playPoints } from '../utils/soundEffects'
+import { AuditingMetrics } from '../utils/auditingMetrics'
 
 export default function FlashcardsVocabulaire() {
   const activeProfile = useProfileStore(s => s.getActiveProfile())
@@ -77,6 +79,9 @@ export default function FlashcardsVocabulaire() {
       setSeenCount(s => s + 1)
       addPoints(5)
       addResult(activeProfile.id, { type: 'flashcards', mot: mot.fr, categorie: selectedCat.id })
+      playTap()
+      playPoints()
+      AuditingMetrics.track({ module: 'flashcards', type: 'complete', component: 'FlashcardsVocabulaire', profileId: activeProfile.id, profileName: activeProfile.prenom, metadata: { mot: mot.fr } })
     }
   }
 

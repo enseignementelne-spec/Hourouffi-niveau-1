@@ -6,6 +6,8 @@ import { lettresPrioritaires } from '../data/alphabet'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
 import { motion } from 'framer-motion'
 import { ArrowLeft, RotateCcw, Check, ChevronRight, Eraser } from 'lucide-react'
+import { playSuccess, playPoints, playVictory } from '../utils/soundEffects'
+import { AuditingMetrics } from '../utils/auditingMetrics'
 
 export default function TracageLettres() {
   const activeProfile = useProfileStore(s => s.getActiveProfile())
@@ -82,7 +84,7 @@ export default function TracageLettres() {
 
     // Heuristic: At least 1000 pixels should be drawn for a valid trace
     if (filledPixels < 800) {
-      alert('حاول مجدداً! ارسم الحرف جيداً (Plus de détails s'il vous plaît)')
+      alert(`حاول مجدداً! ارسم الحرف جيداً (Plus de détails s'il vous plaît)`)
       return
     }
 
@@ -91,6 +93,9 @@ export default function TracageLettres() {
     setCompletedCount(c => c + 1)
     addPoints(20)
     addResult(activeProfile.id, { type: 'tracage', completed: true, lettreId: letter.id })
+    playSuccess()
+    playPoints()
+    AuditingMetrics.track({ module: 'tracage', type: 'correct', component: 'TracageLettres', profileId: activeProfile.id, profileName: activeProfile.prenom, metadata: { lettreId: letter.id } })
   }
 
   const next = () => {

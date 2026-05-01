@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { useProfileStore } from '../store/useProfileStore'
 import { useGameStore } from '../store/useGameStore'
@@ -7,6 +7,8 @@ import PremiumAudioPlayer from '../components/ui/PremiumAudioPlayer'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, RotateCcw, Trophy } from 'lucide-react'
+import { playSuccess, playError, playVictory, playPoints } from '../utils/soundEffects'
+import { AuditingMetrics, estimateConfidence } from '../utils/auditingMetrics'
 
 export default function DistinctionPhonemes() {
   const activeProfile = useProfileStore(s => s.getActiveProfile())
@@ -21,16 +23,24 @@ export default function DistinctionPhonemes() {
   const [gameOver, setGameOver] = useState(false)
   const [targetIsFirst, setTargetIsFirst] = useState(() => Math.random() > 0.5)
 
+  // Timing
+  const sessionIdRef = useRef(`phon_${Date.now()}`)
+  const questionStartRef = useRef(Date.now())
+
+  // Session management
   useEffect(() => {
-    // Tracking de performance pédagogique
-    import('../utils/auditingMetrics').then(({ AuditingMetrics }) => {
-      AuditingMetrics.track({
-        module: 'phoneme',
-        type: 'session-start',
-        component: 'DistinctionPhonemes'
-      })
-    })
-  }, [])
+    if (!activeProfile) return
+    sessionIdRef.current = `phon_${Date.now()}`
+    AuditingMetrics.startSession(sessionIdRef.current, activeProfile?.id, 'phonemes')
+    return () => {
+      AuditingMetrics.endSession(sessionIdRef.current)
+    }
+  }, [activeProfile?.id])
+
+  // Reset question timer
+  useEffect(() => {
+    questionStartRef.current = Date.now()
+  }, [currentIndex])
 
   if (!activeProfile) return <Navigate to="/" replace />
 
@@ -43,18 +53,37 @@ export default function DistinctionPhonemes() {
     setSelected(isFirst ? 'first' : 'second')
     setIsCorrect(correct)
 
+    const responseTime = Date.now() - questionStartRef.current
+    const difficulty = current.difficulte || 2
+    const confidence = estimateConfidence(responseTime, difficulty)
+
     if (correct) {
       setScore(s => s + 30)
       setShowConfetti(true)
       addPoints(30)
       addResult(activeProfile.id, { type: 'phonemes', correct: true, phonemeId: current.id })
+      playSuccess()
+      playPoints()
+      AuditingMetrics.track({
+        module: 'phonemes', type: 'correct', component: 'DistinctionPhonemes',
+        profileId: activeProfile.id, profileName: activeProfile.prenom,
+        metadata: { sessionId: sessionIdRef.current, responseTime, difficulty, confidence, phonemeId: current.id }
+      })
     } else {
       addResult(activeProfile.id, { type: 'phonemes', correct: false, phonemeId: current.id })
+      playError()
+      AuditingMetrics.track({
+        module: 'phonemes', type: 'error', component: 'DistinctionPhonemes',
+        profileId: activeProfile.id, profileName: activeProfile.prenom,
+        metadata: { sessionId: sessionIdRef.current, responseTime, difficulty, confidence, phonemeId: current.id }
+      })
     }
 
     setTimeout(() => {
       if (currentIndex + 1 >= phonemes.length) {
         setGameOver(true)
+        playVictory()
+        AuditingMetrics.endSession(sessionIdRef.current)
       } else {
         setCurrentIndex(i => i + 1)
         setSelected(null)

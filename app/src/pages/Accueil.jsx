@@ -15,6 +15,8 @@ export default function Accueil() {
   const [isCreating, setIsCreating] = useState(false)
   const [newName, setNewName] = useState('')
   const [selectedAvatar, setSelectedAvatar] = useState(0)
+  const [newGoal, setNewGoal] = useState(200)
+  const [difficulty, setDifficulty] = useState('normal')
   const [currentUrl, setCurrentUrl] = useState('')
   const [isQrExpanded, setIsQrExpanded] = useState(false)
 
@@ -24,13 +26,33 @@ export default function Accueil() {
 
   const handleCreate = () => {
     if (!newName.trim()) return
-    const id = createProfile({ prenom: newName.trim(), avatar: CHILD_AVATARS[selectedAvatar] })
+    const id = createProfile({ 
+      prenom: newName.trim(), 
+      avatar: CHILD_AVATARS[selectedAvatar],
+      progress: 0,
+      goal: newGoal,
+      difficulty: difficulty
+    })
     setActiveProfile(id)
     navigate('/modules')
+    // Reset
+    setNewName('')
+    setSelectedAvatar(0)
+    setNewGoal(200)
+    setDifficulty('normal')
+    // Effet visuel
+    const btn = document.querySelector('.w-full.flex.items-center.justify-center.gap-2.p-3.5')
+    if (btn) btn.style.transform = 'scale(0.95)'
   }
 
   const handleSelect = (id) => {
     setActiveProfile(id)
+    // Micro-célébration visuelle
+    const btn = document.querySelector(`[data-profile-id="${id}"]`)
+    if (btn) {
+      btn.style.transform = 'scale(0.95)'
+      setTimeout(() => btn.style.transform = '', 150)
+    }
     navigate('/modules')
   }
 
@@ -51,7 +73,7 @@ export default function Accueil() {
             <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.15em] mt-2">تعلّم العربية باللعب</p>
           </div>
 
-          <div className="inline-block bg-gold-100 text-gold-600 shadow-sm px-5 py-2 rounded-full font-bold text-sm">
+          <div className="inline-block bg-gold-100 text-gold-600 shadow-sm px-5 py-2 rounded-full font-bold text-sm animate-pulse">
             ✨ التعلّم الممتع ✨
           </div>
 
@@ -104,10 +126,13 @@ export default function Accueil() {
           </div>
         </motion.div>
 
-        {/* Right — Profiles */}
+{/* Right — Profiles */}
         <motion.div
           className="bg-white p-8 rounded-[2rem] card-shadow-lg border border-slate-100/50 w-full max-w-md mx-auto"
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          whileHover={{ scale: 1.02 }}
         >
           <div className="text-center mb-6">
             <h2 className="text-2xl font-black text-slate-800 mb-1">من أنت؟ 🧒</h2>
@@ -116,14 +141,14 @@ export default function Accueil() {
 
           <div className="space-y-2.5 mb-5 max-h-[280px] overflow-y-auto pr-1 custom-scrollbar">
             {profiles.map(p => (
-              <button
-                key={p.id}
-                onClick={() => handleSelect(p.id)}
-                className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border transition-all text-left group ${
-                  activeProfile?.id === p.id
-                    ? 'border-brand-400 bg-brand-50/50 shadow-sm'
-                    : 'border-slate-200 hover:border-brand-300 hover:shadow-md bg-white'
-                }`}
+<button
+                  key={p.id}
+                  onClick={() => handleSelect(p.id)}
+                  className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border transition-all text-left group ${
+                    activeProfile?.id === p.id
+                      ? 'border-brand-400 bg-brand-50/50 shadow-sm'
+                      : 'border-slate-200 hover:border-brand-300 hover:shadow-md bg-white'
+                  }`}
               >
                 <div className={`h-12 w-12 rounded-xl flex items-center justify-center overflow-hidden group-hover:scale-110 transition-transform ${p.avatarColor || 'bg-brand-50 text-brand-600'}`}>
                   {p.avatar?.startsWith('/') ? (
@@ -136,8 +161,34 @@ export default function Accueil() {
                   <h3 className="font-bold text-slate-800 text-lg">{p.prenom}</h3>
                   <p className="text-xs font-semibold text-brand-600">
                     {p.avatarName && <span className="text-slate-400">{p.avatarName} • </span>}
-                    المستوى {p.niveau} • {p.pointsTotal} ⭐
+                    المستوى {p.niveau}
                   </p>
+                  {/* Badge d'activité */}
+                  {activeProfile?.id === p.id && (
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full mt-1">
+                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                      نشط الآن
+                    </span>
+                  )}
+                  <div className="mt-2">
+                    <div className="flex justify-between text-xs text-slate-500 mb-1">
+                      <span>Progression</span>
+                      <span>{Math.round(p.progress || 0)}%</span>
+                    </div>
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <motion.div 
+                        className="h-full bg-gradient-to-r from-brand-400 to-brand-600 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(p.progress || 0, 100)}%` }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center mt-1">
+                    <span className="text-xs text-amber-600 font-bold">
+                      {p.pointsTotal} ⭐ {p.pointsTotal >= 100 && '🔥'}
+                    </span>
+                  </div>
                 </div>
               </button>
             ))}
@@ -159,6 +210,36 @@ export default function Accueil() {
                 autoFocus
                 className="w-full p-3.5 rounded-xl border-2 border-slate-200 focus:border-brand-400 outline-none font-bold bg-white"
               />
+              {/* Objectif hebdomadaire */}
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">🎯 Objectif de la semaine</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[100, 200, 500].map(pts => (
+                    <button
+                      key={pts}
+                      onClick={() => setNewGoal(pts)}
+                      className={`p-2 rounded-lg text-xs font-bold transition-all ${newGoal === pts ? 'bg-brand-500 text-white' : 'bg-white border border-slate-200'}`}
+                    >
+                      {pts} ⭐
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Niveau de difficulté */}
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">⚡ Difficulté</p>
+                <div className="flex gap-2">
+                  {['Facile', 'Normal', 'Difficile'].map((diff, i) => (
+                    <button
+                      key={diff}
+                      onClick={() => setDifficulty(['easy', 'normal', 'hard'][i])}
+                      className={`flex-1 p-2 rounded-lg text-xs font-bold transition-all ${difficulty === ['easy', 'normal', 'hard'][i] ? 'bg-brand-500 text-white' : 'bg-white border border-slate-200'}`}
+                    >
+                      {diff}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {/* Avatars — Grille unique */}
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">اختر شخصيتك</p>
