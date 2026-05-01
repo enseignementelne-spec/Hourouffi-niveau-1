@@ -24,74 +24,128 @@ const generateDiploma = (student, stats) => {
   const width = doc.internal.pageSize.getWidth()
   const height = doc.internal.pageSize.getHeight()
 
-  // Background
-  doc.setFillColor(252, 247, 237)
+  // --- DESIGN PREMIUM ---
+  
+  // Fond Dégradé léger (Simulation)
+  doc.setFillColor(255, 255, 255)
   doc.rect(0, 0, width, height, 'F')
   
-  // Border
-  doc.setDrawColor(13, 148, 136)
-  doc.setLineWidth(2)
-  doc.rect(10, 10, width - 20, height - 20)
-  doc.setLineWidth(0.5)
-  doc.rect(12, 12, width - 24, height - 24)
+  // Cadre double
+  doc.setDrawColor(20, 184, 166) // Teal-500
+  doc.setLineWidth(3)
+  doc.rect(5, 5, width - 10, height - 10)
+  
+  doc.setDrawColor(245, 158, 11) // Amber-500
+  doc.setLineWidth(1)
+  doc.rect(8, 8, width - 16, height - 16)
 
-  // Content
+  // Filigrane / Rosace
+  doc.setDrawColor(241, 245, 249)
+  doc.setLineWidth(0.5)
+  for (let i = 0; i < 360; i += 15) {
+    doc.line(width/2, height/2, width/2 + Math.cos(i) * 50, height/2 + Math.sin(i) * 50)
+  }
+
+  // Header
   doc.setTextColor(13, 148, 136)
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(40)
-  doc.text('CERTIFICAT DE RÉUSSITE', width / 2, 50, { align: 'center' })
-  
-  doc.setFontSize(20)
-  doc.setTextColor(100, 116, 139)
-  doc.text('Ce diplôme est fièrement décerné à', width / 2, 80, { align: 'center' })
-  
-  doc.setFontSize(45)
-  doc.setTextColor(30, 41, 59)
-  doc.text(student.prenom.toUpperCase(), width / 2, 105, { align: 'center' })
-  
-  doc.setFontSize(18)
-  doc.setTextColor(100, 116, 139)
-  doc.text(`Pour avoir brillamment complété le niveau ${student.niveau}`, width / 2, 130, { align: 'center' })
-  doc.text(`du programme d'apprentissage de la langue arabe Hurûfî`, width / 2, 140, { align: 'center' })
-
-  // Stats Summary
-  doc.setFontSize(12)
-  doc.text(`Points obtenus : ${student.pointsTotal} ⭐  |  Sessions : ${stats.totalSessions}`, width / 2, 160, { align: 'center' })
-
-  // Footer
   doc.setFontSize(10)
+  doc.text('PROGRAMME D\'EXCELLENCE HURÛFÎ', width / 2, 20, { align: 'center' })
+  
+  doc.setFontSize(48)
+  doc.text('DIPLÔME DE RÉUSSITE', width / 2, 55, { align: 'center' })
+  
+  // Badge doré
+  doc.setFillColor(245, 158, 11)
+  doc.circle(width - 40, height - 40, 20, 'F')
+  doc.setTextColor(255, 255, 255)
+  doc.setFontSize(10)
+  doc.text('CERTIFIÉ', width - 40, height - 42, { align: 'center' })
+  doc.text('2026', width - 40, height - 35, { align: 'center' })
+
+  // Corps
+  doc.setTextColor(100, 116, 139)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(22)
+  doc.text('Ce titre honorifique est décerné à', width / 2, 85, { align: 'center' })
+  
+  doc.setFontSize(54)
+  doc.setTextColor(15, 23, 42)
+  doc.setFont('helvetica', 'bold')
+  doc.text(student.prenom.toUpperCase(), width / 2, 115, { align: 'center' })
+  
+  doc.setDrawColor(226, 232, 240)
+  doc.line(width / 2 - 60, 120, width / 2 + 60, 120)
+
+  doc.setFontSize(18)
+  doc.setTextColor(71, 85, 105)
+  doc.setFont('helvetica', 'normal')
+  doc.text(`Pour son assiduité et ses progrès exceptionnels au Niveau ${student.niveau}`, width / 2, 140, { align: 'center' })
+
+  // Footer / Scores
+  doc.setFontSize(12)
+  doc.setTextColor(148, 163, 184)
+  doc.text(`Score Global : ${student.pointsTotal} points étoiles ⭐`, width / 2, 165, { align: 'center' })
+
   const date = new Date().toLocaleDateString('fr-FR')
-  doc.text(`Fait le ${date}`, 30, height - 30)
-  doc.text('La Maîtresse', width - 60, height - 30)
+  doc.setFontSize(11)
+  doc.text(`Délivré le ${date}`, 30, height - 30)
+  
+  doc.setFontSize(14)
+  doc.setTextColor(13, 148, 136)
+  doc.text('LA MAÎTRESSE', width - 70, height - 70)
+  doc.setDrawColor(13, 148, 136)
+  doc.line(width - 90, height - 65, width - 50, height - 65)
   
   doc.save(`Diplome_Hurufi_${student.prenom}.pdf`)
 }
 
 const generateClassReport = (profiles, getStats) => {
   const doc = new jsPDF()
-  doc.setFontSize(20)
-  doc.text('Rapport de Progrès Hurûfî', 14, 22)
   
+  // Header Style
+  doc.setFillColor(13, 148, 136)
+  doc.rect(0, 0, 210, 40, 'F')
+  
+  doc.setTextColor(255, 255, 255)
+  doc.setFontSize(24)
+  doc.setFont('helvetica', 'bold')
+  doc.text('RAPPORT DE CLASSE HURÛFÎ', 105, 25, { align: 'center' })
+  
+  doc.setFontSize(10)
+  doc.setFont('helvetica', 'normal')
+  const date = new Date().toLocaleDateString('fr-FR')
+  doc.text(`Généré le ${date} | Total Élèves : ${profiles.length}`, 105, 33, { align: 'center' })
+
   const tableData = profiles.map(p => {
     const s = getStats(p.id)
     return [
-      p.prenom,
-      p.niveau,
-      p.pointsTotal,
+      p.prenom.toUpperCase(),
+      `Niveau ${p.niveau}`,
+      `${p.pointsTotal} pts`,
       s.totalSessions,
       `${Math.round(((s.ecoute?.correct || 0) / 20) * 100)}%`,
-      `${Math.round(((s.phonemes?.correct || 0) / 6) * 100)}%`
+      `${Math.round(((s.phonemes?.correct || 0) / 6) * 100)}%`,
+      s.streak > 0 ? `🔥 ${s.streak}` : '-'
     ]
   })
 
   doc.autoTable({
-    startY: 30,
-    head: [['Prénom', 'Niveau', 'Points', 'Sessions', 'Écoute', 'Phonèmes']],
+    startY: 50,
+    head: [['Nom de l\'Élève', 'Niveau', 'Étoiles', 'Sessions', 'Reconnaissance', 'Phonèmes', 'Série']],
     body: tableData,
-    headStyles: { fillColor: [13, 148, 136] },
+    headStyles: { 
+      fillColor: [20, 184, 166], 
+      textColor: [255, 255, 255],
+      fontSize: 10,
+      fontStyle: 'bold'
+    },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    margin: { top: 50 },
+    styles: { fontSize: 9, cellPadding: 5 }
   })
 
-  doc.save('Rapport_Classe_Hurufi.pdf')
+  doc.save(`Rapport_Classe_Hurufi_${date.replace(/\//g, '-')}.pdf`)
 }
 
 // --- HELPER COMPONENTS ---
