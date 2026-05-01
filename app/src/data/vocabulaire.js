@@ -87,9 +87,12 @@ const rawCategories = [
   {
     id: 'nourriture', nom: 'La nourriture', nomAr: 'الطَّعَام', emoji: '🍎',
     mots: [
-      { fr: 'Pain', ar: 'خُبْز', translit: 'Khubz' }, { fr: 'Eau', ar: 'مَاء', translit: "Mā'" },
-      { fr: 'Lait', ar: 'حَلِيب', translit: 'Ḥalīb' }, { fr: 'Pomme', ar: 'تُفَّاحَة', translit: 'Tuffāḥa' },
-      { fr: 'Banane', ar: 'مَوْزَة', translit: 'Mawza' }, { fr: 'Jus', ar: 'عَصِير', translit: "'Aṣīr" },
+      { fr: 'Pain', ar: 'خُبْز', translit: 'Khubz', image: 'resources/images/vocabulaire/nourriture-1.png' }, 
+      { fr: 'Eau', ar: 'مَاء', translit: "Mā'", image: 'resources/images/vocabulaire/nourriture-2.png' },
+      { fr: 'Lait', ar: 'حَلِيب', translit: 'Ḥalīb', image: 'resources/images/vocabulaire/nourriture-3.png' }, 
+      { fr: 'Pomme', ar: 'تُفَّاحَة', translit: 'Tuffāḥa', image: 'resources/images/vocabulaire/nourriture-4.png' },
+      { fr: 'Banane', ar: 'مَوْزَة', translit: 'Mawza', image: 'resources/images/vocabulaire/nourriture-5.png' }, 
+      { fr: 'Jus', ar: 'عَصِير', translit: "'Aṣīr" },
       { fr: 'Gâteau', ar: 'كَعْكَة', translit: "Ka'ka" }, { fr: 'Bonbon', ar: 'حَلْوَى', translit: 'Ḥalwā' },
     ]
   },
