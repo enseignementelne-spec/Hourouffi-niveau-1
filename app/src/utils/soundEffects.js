@@ -1,8 +1,17 @@
 /**
- * Système de bruitages pédagogiques via Web Audio API
- * Aucun fichier externe requis — les sons sont générés dynamiquement.
- * Inspiré des standards UX d'apps éducatives (Duolingo, Khan Academy Kids).
+ * SYSTÈME DE BRUITAGES PÉDAGOGIQUES — Hurûfî
+ *
+ * Génération via Web Audio API — aucun fichier externe requis.
+ *
+ * Améliorations v2 :
+ * - Vérification soundEnabled avant chaque effet
+ * - Harmoniques subtiles (sons plus riches)
+ * - AudioContext préchauffé dès le premier appel utilisateur
+ * - Anticlic systématique (rampe gain → 0 avant stop)
+ * - Volumes adaptés aux enfants (4-7 ans)
  */
+
+import { useAppStore } from '../store/useAppStore'
 
 let audioCtx = null
 
@@ -10,7 +19,6 @@ function getContext() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)()
   }
-  // Resume if suspended (autoplay policy)
   if (audioCtx.state === 'suspended') {
     audioCtx.resume()
   }
@@ -18,25 +26,83 @@ function getContext() {
 }
 
 /**
- * Son de succès — Accord joyeux ascendant (Do-Mi-Sol)
+ * Crée un oscillateur avec son propre gain, connecté à la destination.
+ * Retourne { osc, gainNode } pour piloter le volume indépendamment.
+ */
+function createVoice(ctx, type = 'sine', frequency, gainValue, startTime, duration) {
+  const gainNode = ctx.createGain()
+  gainNode.gain.setValueAtTime(gainValue, startTime)
+  gainNode.gain.setValueAtTime(gainValue, startTime + duration - 0.001)
+  gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration)
+  gainNode.connect(ctx.destination)
+
+  const osc = ctx.createOscillator()
+  osc.type = type
+  osc.frequency.setValueAtTime(frequency, startTime)
+  osc.connect(gainNode)
+  osc.start(startTime)
+  osc.stop(startTime + duration)
+
+  return { osc, gainNode }
+}
+
+/**
+ * Son de succès — Accord majeur ascendant C5-E5-G5 (523, 659, 784 Hz).
+ * Sous-harmonique à l'octave inférieure + harmonique 2× pour la brillance.
  */
 export function playSuccess() {
   try {
+    if (!useAppStore.getState().soundEnabled) return
+
     const ctx = getContext()
     const now = ctx.currentTime
-    const gain = ctx.createGain()
-    gain.connect(ctx.destination)
-    gain.gain.setValueAtTime(0.15, now)
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8)
+    const duration = 0.8
+    const rampStart = duration - 0.2
 
-    const frequencies = [523.25, 659.25, 783.99] // C5, E5, G5
-    frequencies.forEach((freq, i) => {
+    const freqs = [523.25, 659.25, 783.99]
+
+    freqs.forEach((freq, i) => {
+      const t = now + i * 0.12
+      const noteDur = duration - i * 0.12
+
+      const mainGain = ctx.createGain()
+      mainGain.gain.setValueAtTime(0.12, t)
+      mainGain.gain.setValueAtTime(0.12, t + rampStart)
+      mainGain.gain.exponentialRampToValueAtTime(0.001, t + noteDur)
+      mainGain.connect(ctx.destination)
+
       const osc = ctx.createOscillator()
       osc.type = 'sine'
-      osc.frequency.setValueAtTime(freq, now + i * 0.12)
-      osc.connect(gain)
-      osc.start(now + i * 0.12)
-      osc.stop(now + 0.8)
+      osc.frequency.setValueAtTime(freq, t)
+      osc.connect(mainGain)
+      osc.start(t)
+      osc.stop(t + noteDur)
+
+      const subGain = ctx.createGain()
+      subGain.gain.setValueAtTime(0.04, t)
+      subGain.gain.setValueAtTime(0.04, t + rampStart)
+      subGain.gain.exponentialRampToValueAtTime(0.001, t + noteDur)
+      subGain.connect(ctx.destination)
+
+      const subOsc = ctx.createOscillator()
+      subOsc.type = 'sine'
+      subOsc.frequency.setValueAtTime(freq / 2, t)
+      subOsc.connect(subGain)
+      subOsc.start(t)
+      subOsc.stop(t + noteDur)
+
+      const harmGain = ctx.createGain()
+      harmGain.gain.setValueAtTime(0.02, t)
+      harmGain.gain.setValueAtTime(0.02, t + rampStart)
+      harmGain.gain.exponentialRampToValueAtTime(0.001, t + noteDur)
+      harmGain.connect(ctx.destination)
+
+      const harmOsc = ctx.createOscillator()
+      harmOsc.type = 'sine'
+      harmOsc.frequency.setValueAtTime(freq * 2, t)
+      harmOsc.connect(harmGain)
+      harmOsc.start(t)
+      harmOsc.stop(t + noteDur)
     })
   } catch (e) {
     console.warn('[SFX] Success sound failed:', e)
@@ -44,61 +110,88 @@ export function playSuccess() {
 }
 
 /**
- * Son d'erreur — Ton descendant doux (Ré bémol - La bémol)
+ * Son d'erreur — Triangle wave descendant F#4→E4 (370→250 Hz)
+ * + harmonique sine à l'octave supérieure.
  */
 export function playError() {
   try {
+    if (!useAppStore.getState().soundEnabled) return
+
     const ctx = getContext()
     const now = ctx.currentTime
-    const gain = ctx.createGain()
-    gain.connect(ctx.destination)
-    gain.gain.setValueAtTime(0.12, now)
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5)
+    const duration = 0.5
+
+    const mainGain = ctx.createGain()
+    mainGain.gain.setValueAtTime(0.12, now)
+    mainGain.gain.setValueAtTime(0.12, now + duration - 0.001)
+    mainGain.gain.exponentialRampToValueAtTime(0.001, now + duration)
+    mainGain.connect(ctx.destination)
 
     const osc = ctx.createOscillator()
     osc.type = 'triangle'
-    osc.frequency.setValueAtTime(370, now) // F#4
+    osc.frequency.setValueAtTime(370, now)
     osc.frequency.exponentialRampToValueAtTime(250, now + 0.4)
-    osc.connect(gain)
+    osc.connect(mainGain)
     osc.start(now)
-    osc.stop(now + 0.5)
+    osc.stop(now + duration)
+
+    const harmGain = ctx.createGain()
+    harmGain.gain.setValueAtTime(0.03, now)
+    harmGain.gain.setValueAtTime(0.03, now + duration - 0.001)
+    harmGain.gain.exponentialRampToValueAtTime(0.001, now + duration)
+    harmGain.connect(ctx.destination)
+
+    const harmOsc = ctx.createOscillator()
+    harmOsc.type = 'sine'
+    harmOsc.frequency.setValueAtTime(740, now)
+    harmOsc.frequency.exponentialRampToValueAtTime(500, now + 0.4)
+    harmOsc.connect(harmGain)
+    harmOsc.start(now)
+    harmOsc.stop(now + duration)
   } catch (e) {
     console.warn('[SFX] Error sound failed:', e)
   }
 }
 
 /**
- * Son de clic — Petit "tap" subtil
+ * Son de clic — Sine 800 Hz très court avec rampe anti-clic.
  */
 export function playTap() {
   try {
+    if (!useAppStore.getState().soundEnabled) return
+
     const ctx = getContext()
     const now = ctx.currentTime
+    const duration = 0.08
+
     const gain = ctx.createGain()
-    gain.connect(ctx.destination)
     gain.gain.setValueAtTime(0.08, now)
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08)
+    gain.gain.setValueAtTime(0.08, now + duration - 0.001)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration)
+    gain.connect(ctx.destination)
 
     const osc = ctx.createOscillator()
     osc.type = 'sine'
     osc.frequency.setValueAtTime(800, now)
     osc.connect(gain)
     osc.start(now)
-    osc.stop(now + 0.08)
+    osc.stop(now + duration)
   } catch (e) {
     console.warn('[SFX] Tap sound failed:', e)
   }
 }
 
 /**
- * Son de victoire — Fanfare complète pour fin de module
+ * Son de victoire — Fanfare Do-Mi-Sol-Do(octave) avec harmoniques
+ * et vibrato sur la dernière note tenue.
  */
 export function playVictory() {
   try {
+    if (!useAppStore.getState().soundEnabled) return
+
     const ctx = getContext()
     const now = ctx.currentTime
 
-    // Notes de fanfare : Do-Mi-Sol-Do(octave)
     const notes = [
       { freq: 523.25, start: 0,    dur: 0.2 },
       { freq: 659.25, start: 0.2,  dur: 0.2 },
@@ -107,17 +200,46 @@ export function playVictory() {
     ]
 
     notes.forEach(({ freq, start, dur }) => {
-      const gain = ctx.createGain()
-      gain.connect(ctx.destination)
-      gain.gain.setValueAtTime(0.12, now + start)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + start + dur)
+      const t = now + start
+
+      const mainGain = ctx.createGain()
+      mainGain.gain.setValueAtTime(0.12, t)
+      mainGain.gain.setValueAtTime(0.12, t + dur - 0.001)
+      mainGain.gain.exponentialRampToValueAtTime(0.001, t + dur)
+      mainGain.connect(ctx.destination)
 
       const osc = ctx.createOscillator()
       osc.type = 'sine'
-      osc.frequency.setValueAtTime(freq, now + start)
-      osc.connect(gain)
-      osc.start(now + start)
-      osc.stop(now + start + dur)
+      osc.frequency.setValueAtTime(freq, t)
+
+      if (start === 0.6) {
+        const vibrato = ctx.createOscillator()
+        vibrato.type = 'sine'
+        vibrato.frequency.setValueAtTime(5, t)
+        const vibratoGain = ctx.createGain()
+        vibratoGain.gain.setValueAtTime(5, t)
+        vibrato.connect(vibratoGain)
+        vibratoGain.connect(osc.frequency)
+        vibrato.start(t)
+        vibrato.stop(t + dur)
+      }
+
+      osc.connect(mainGain)
+      osc.start(t)
+      osc.stop(t + dur)
+
+      const subGain = ctx.createGain()
+      subGain.gain.setValueAtTime(0.03, t)
+      subGain.gain.setValueAtTime(0.03, t + dur - 0.001)
+      subGain.gain.exponentialRampToValueAtTime(0.001, t + dur)
+      subGain.connect(ctx.destination)
+
+      const subOsc = ctx.createOscillator()
+      subOsc.type = 'sine'
+      subOsc.frequency.setValueAtTime(freq / 2, t)
+      subOsc.connect(subGain)
+      subOsc.start(t)
+      subOsc.stop(t + dur)
     })
   } catch (e) {
     console.warn('[SFX] Victory sound failed:', e)
@@ -125,26 +247,48 @@ export function playVictory() {
 }
 
 /**
- * Son de badge débloqué — Arpège magique
+ * Son de badge débloqué — Arpège 5 notes G4→C5→E5→G5→C6
+ * Chaque note avec harmonique octave basse.
  */
 export function playBadgeUnlocked() {
   try {
+    if (!useAppStore.getState().soundEnabled) return
+
     const ctx = getContext()
     const now = ctx.currentTime
+    const spacing = 0.12
+    const noteDur = 0.4
 
-    const notes = [392, 523.25, 659.25, 783.99, 1046.5] // G4 → C6
+    const notes = [392, 523.25, 659.25, 783.99, 1046.5]
+
     notes.forEach((freq, i) => {
-      const gain = ctx.createGain()
-      gain.connect(ctx.destination)
-      gain.gain.setValueAtTime(0.1, now + i * 0.1)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.4)
+      const t = now + i * spacing
+
+      const mainGain = ctx.createGain()
+      mainGain.gain.setValueAtTime(0.10, t)
+      mainGain.gain.setValueAtTime(0.10, t + noteDur - 0.001)
+      mainGain.gain.exponentialRampToValueAtTime(0.001, t + noteDur)
+      mainGain.connect(ctx.destination)
 
       const osc = ctx.createOscillator()
       osc.type = 'sine'
-      osc.frequency.setValueAtTime(freq, now + i * 0.1)
-      osc.connect(gain)
-      osc.start(now + i * 0.1)
-      osc.stop(now + i * 0.1 + 0.4)
+      osc.frequency.setValueAtTime(freq, t)
+      osc.connect(mainGain)
+      osc.start(t)
+      osc.stop(t + noteDur)
+
+      const subGain = ctx.createGain()
+      subGain.gain.setValueAtTime(0.02, t)
+      subGain.gain.setValueAtTime(0.02, t + noteDur - 0.001)
+      subGain.gain.exponentialRampToValueAtTime(0.001, t + noteDur)
+      subGain.connect(ctx.destination)
+
+      const subOsc = ctx.createOscillator()
+      subOsc.type = 'sine'
+      subOsc.frequency.setValueAtTime(freq / 2, t)
+      subOsc.connect(subGain)
+      subOsc.start(t)
+      subOsc.stop(t + noteDur)
     })
   } catch (e) {
     console.warn('[SFX] Badge sound failed:', e)
@@ -152,16 +296,22 @@ export function playBadgeUnlocked() {
 }
 
 /**
- * Son de points gagnés — petit "ding" de pièce
+ * Son de points gagnés — Glissando 1200→1800 Hz, sine, gain 0.10
+ * Simple et efficace — pas d'harmoniques.
  */
 export function playPoints() {
   try {
+    if (!useAppStore.getState().soundEnabled) return
+
     const ctx = getContext()
     const now = ctx.currentTime
+    const duration = 0.3
+
     const gain = ctx.createGain()
+    gain.gain.setValueAtTime(0.10, now)
+    gain.gain.setValueAtTime(0.10, now + duration - 0.001)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration)
     gain.connect(ctx.destination)
-    gain.gain.setValueAtTime(0.1, now)
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3)
 
     const osc = ctx.createOscillator()
     osc.type = 'sine'
@@ -169,7 +319,7 @@ export function playPoints() {
     osc.frequency.exponentialRampToValueAtTime(1800, now + 0.15)
     osc.connect(gain)
     osc.start(now)
-    osc.stop(now + 0.3)
+    osc.stop(now + duration)
   } catch (e) {
     console.warn('[SFX] Points sound failed:', e)
   }

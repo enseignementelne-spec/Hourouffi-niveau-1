@@ -83,7 +83,7 @@ export default function Accueil() {
           </p>
 
           <div className="flex flex-wrap gap-3 pt-2">
-            {['🎧 استماع', '🧠 ذاكرة', '👂 أصوات', '✏️ كتابة', '📷 كلمات'].map((item, i) => (
+            {['🎧 استماع', '🧠 ذاكرة', '👂 أصوات', '✏️ كتابة', '📷 كلمات', '💬 محادثة'].map((item, i) => (
               <span key={i} className="bg-white dark:bg-slate-800 px-3 py-1.5 rounded-full text-sm font-bold text-slate-600 dark:text-slate-300 shadow-sm border border-slate-100 dark:border-slate-700">
                 {item}
               </span>
@@ -97,8 +97,8 @@ export default function Accueil() {
                 <Sparkles className="h-4 w-4" />
               </div>
               <div>
-                <h4 className="font-bold text-brand-700 text-sm mb-0.5">5 ألعاب تعليمية</h4>
-                <p className="text-xs text-slate-500 font-medium">تمييز الحروف، ذاكرة، أصوات، تتبع، وبطاقات كلمات — كل ما تحتاجه للتقدم!</p>
+                <h4 className="font-bold text-brand-700 text-sm mb-0.5">6 ألعاب تعليمية</h4>
+                <p className="text-xs text-slate-500 font-medium">تمييز الحروف، ذاكرة، أصوات، تتبع، كلمات، ومحادثة — كل ما تحتاجه للتقدم!</p>
               </div>
             </div>
 
@@ -181,14 +181,14 @@ export default function Accueil() {
                   )}
                   <div className="mt-2">
                     <div className="flex justify-between text-xs text-slate-500 mb-1">
-                      <span>التقدم</span>
-                      <span>{Math.round(p.progress || 0)}%</span>
+                      <span>التقدم نحو الهدف</span>
+                      <span>{Math.round(Math.min((p.pointsTotal / (p.goal || 200)) * 100, 100))}%</span>
                     </div>
                     <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                       <motion.div 
                         className="h-full bg-gradient-to-r from-brand-400 to-brand-600 rounded-full"
                         initial={{ width: 0 }}
-                        animate={{ width: `${Math.min(p.progress || 0, 100)}%` }}
+                        animate={{ width: `${Math.min((p.pointsTotal / (p.goal || 200)) * 100, 100)}%` }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
                       />
                     </div>

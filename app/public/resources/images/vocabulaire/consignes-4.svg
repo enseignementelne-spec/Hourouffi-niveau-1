@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <rect width="200" height="200" rx="20" fill="#D6EAF8"/>
+  <circle cx="95" cy="65" r="20" fill="#FFDAB9"/>
+  <circle cx="88" cy="61" r="1.5" fill="#333"/>
+  <circle cx="102" cy="61" r="1.5" fill="#333"/>
+  <path d="M88 70 Q95 76 102 70" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+  <rect x="85" y="84" width="20" height="30" rx="5" fill="#27AE60"/>
+  <line x1="95" y1="114" x2="95" y2="148" stroke="#FFDAB9" stroke-width="6" stroke-linecap="round"/>
+  <line x1="95" y1="148" x2="85" y2="170" stroke="#FFDAB9" stroke-width="5" stroke-linecap="round"/>
+  <line x1="95" y1="148" x2="105" y2="170" stroke="#FFDAB9" stroke-width="5" stroke-linecap="round"/>
+  <path d="M115 60 Q130 55 132 60 Q134 65 128 68" fill="none" stroke="#FFDAB9" stroke-width="4" stroke-linecap="round"/>
+  <text x="100" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#333">اِسْتَمِعْ</text>
+</svg>

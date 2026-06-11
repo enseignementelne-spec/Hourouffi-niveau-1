@@ -14,6 +14,7 @@ export const CURRICULUM_LEVELS = [
     descAr: 'أربع حروف أساسية',
     letterIds: [1, 2, 3, 4],      // ا ح د ر
     phonemeIds: [1],               // ح vs ه
+    conversationIds: [1],
     requiredMastery: 0.7,
     memoryPairs: 4,
     color: 'from-blue-400 to-blue-600',
@@ -26,6 +27,7 @@ export const CURRICULUM_LEVELS = [
     descAr: 'أربع حروف إضافية',
     letterIds: [5, 6, 7, 8],      // س ص ط ع
     phonemeIds: [2, 3],            // ع vs ا, ص vs س
+    conversationIds: [2],
     requiredMastery: 0.7,
     memoryPairs: 4,
     color: 'from-emerald-400 to-emerald-600',
@@ -38,6 +40,7 @@ export const CURRICULUM_LEVELS = [
     descAr: 'الحروف الأخيرة بلا نقاط',
     letterIds: [9, 10, 11, 12],    // ل م و ه
     phonemeIds: [4, 5],            // ض vs د, ط vs ت
+    conversationIds: [3],
     requiredMastery: 0.7,
     memoryPairs: 6,
     color: 'from-amber-400 to-amber-600',
@@ -50,6 +53,7 @@ export const CURRICULUM_LEVELS = [
     descAr: 'كل الحروف العربية',
     letterIds: [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28],
     phonemeIds: [6],               // ق vs ك
+    conversationIds: [4],
     requiredMastery: 0.7,
     memoryPairs: 6,
     color: 'from-purple-400 to-purple-600',
@@ -119,4 +123,13 @@ export function getCurrentLevel(srsItems) {
 export function getMemoryPairs(currentLevel) {
   const level = CURRICULUM_LEVELS.find(l => l.id === currentLevel)
   return level?.memoryPairs || 4
+}
+
+/** Get all conversation IDs available at a curriculum level */
+export function getAvailableConversationIds(currentLevel) {
+  const ids = []
+  for (const level of CURRICULUM_LEVELS) {
+    if (level.id <= currentLevel && level.conversationIds) ids.push(...level.conversationIds)
+  }
+  return ids
 }

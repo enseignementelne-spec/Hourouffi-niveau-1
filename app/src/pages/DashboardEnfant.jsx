@@ -24,11 +24,11 @@ export default function DashboardEnfant() {
   const levelInfo = CURRICULUM_LEVELS.find(l => l.id === currentLevel)
 
   const exercices = [
-    { nom: 'الاستماع والتمييز', key: 'ecoute', max: 28, value: stats.ecoute?.correct || 0, color: 'brand', emoji: '🎧' },
-    { nom: 'الذاكرة', key: 'memory', max: 10, value: stats.memory?.completed || 0, color: 'purple', emoji: '🧠' },
+    { nom: 'الاستماع والتمييز', key: 'ecoute', max: 12, value: stats.ecoute?.correct || 0, color: 'brand', emoji: '🎧' },
+    { nom: 'الذاكرة', key: 'memory', max: 6, value: stats.memory?.completed || 0, color: 'purple', emoji: '🧠' },
     { nom: 'الأصوات', key: 'phonemes', max: 6, value: stats.phonemes?.correct || 0, color: 'emerald', emoji: '👂' },
     { nom: 'تتبع الحروف', key: 'tracage', max: 12, value: stats.tracage?.completed || 0, color: 'gold', emoji: '✏️' },
-    { nom: 'بطاقات الكلمات', key: 'flashcards', max: 100, value: stats.flashcards?.vus || 0, color: 'coral', emoji: '📷' },
+    { nom: 'بطاقات الكلمات', key: 'flashcards', max: 72, value: stats.flashcards?.vus || 0, color: 'coral', emoji: '📷' },
   ]
 
   return (
@@ -166,7 +166,7 @@ export default function DashboardEnfant() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {badges.map(badge => {
-            const unlocked = stats.badges?.includes(badge.id) || badge.condition(stats)
+            const unlocked = stats.badges?.includes(badge.id) || false
             return (
               <div key={badge.id}
                 className={`p-4 rounded-2xl text-center border-2 transition-all ${

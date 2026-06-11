@@ -42,6 +42,8 @@ export const useProfileStore = create(
           dateCreation: new Date().toISOString(),
           pointsTotal: 0,
           niveau: 1,
+          goal: data.goal || 200,
+          difficulty: data.difficulty || 'normal',
         }
         set((state) => ({
           profiles: [...state.profiles, newProfile],

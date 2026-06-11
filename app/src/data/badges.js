@@ -8,6 +8,7 @@ export const badges = [
     emoji: '🎯',
     description: 'أنجز 12 تمرينًا في الاستماع والتمييز',
     condition: (stats) => (stats.ecoute?.correct || 0) >= 12,
+    getProgress: (stats) => Math.min(100, Math.round(((stats.ecoute?.correct || 0) / 12) * 100)),
     color: 'from-blue-400 to-blue-600',
   },
   {
@@ -17,6 +18,7 @@ export const badges = [
     emoji: '👂',
     description: 'ميّز بنجاح 6 أزواج من الأصوات',
     condition: (stats) => (stats.phonemes?.correct || 0) >= 6,
+    getProgress: (stats) => Math.min(100, Math.round(((stats.phonemes?.correct || 0) / 6) * 100)),
     color: 'from-purple-400 to-purple-600',
   },
   {
@@ -26,6 +28,7 @@ export const badges = [
     emoji: '📚',
     description: 'اكتشف 20 كلمة عبر البطاقات',
     condition: (stats) => (stats.flashcards?.vus || 0) >= 20,
+    getProgress: (stats) => Math.min(100, Math.round(((stats.flashcards?.vus || 0) / 20) * 100)),
     color: 'from-emerald-400 to-emerald-600',
   },
   {
@@ -35,6 +38,7 @@ export const badges = [
     emoji: '✏️',
     description: 'اكتب 12 حرفًا بنجاح',
     condition: (stats) => (stats.tracage?.completed || 0) >= 12,
+    getProgress: (stats) => Math.min(100, Math.round(((stats.tracage?.completed || 0) / 12) * 100)),
     color: 'from-amber-400 to-amber-600',
   },
   {
@@ -44,6 +48,7 @@ export const badges = [
     emoji: '🌟',
     description: 'العب 5 أيام متتالية',
     condition: (stats) => (stats.streak || 0) >= 5,
+    getProgress: (stats) => Math.min(100, Math.round(((stats.streak || 0) / 5) * 100)),
     color: 'from-rose-400 to-rose-600',
   },
 ]

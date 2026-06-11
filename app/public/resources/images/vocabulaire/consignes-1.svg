@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <rect width="200" height="200" rx="20" fill="#FDEBD0"/>
+  <rect x="60" y="130" width="80" height="10" rx="3" fill="#A0522D"/>
+  <rect x="75" y="100" width="10" height="40" rx="2" fill="#8B4513"/>
+  <rect x="115" y="100" width="10" height="40" rx="2" fill="#8B4513"/>
+  <rect x="85" y="95" width="30" height="8" rx="2" fill="#A0522D"/>
+  <circle cx="100" cy="80" r="18" fill="#FFDAB9"/>
+  <circle cx="94" cy="76" r="1.5" fill="#333"/>
+  <circle cx="106" cy="76" r="1.5" fill="#333"/>
+  <path d="M94 84 Q100 90 106 84" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="100" cy="83" r="2" fill="#E88"/>
+  <ellipse cx="70" cy="130" rx="8" ry="14" fill="#5B9BD5"/>
+  <ellipse cx="130" cy="130" rx="8" ry="14" fill="#5B9BD5"/>
+  <text x="100" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#333">اِجْلِسْ</text>
+</svg>

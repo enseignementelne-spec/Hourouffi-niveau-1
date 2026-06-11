@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { useProfileStore } from '../store/useProfileStore'
 import { useGameStore } from '../store/useGameStore'
@@ -7,15 +7,16 @@ import { alphabet } from '../data/alphabet'
 import { getAvailableLetters, getCurrentLevel, CURRICULUM_LEVELS, calculateLevelMastery } from '../data/curriculum'
 import { selectItemsForReview, getMasteryLevel, getMasteryColor } from '../utils/srsAlgorithm'
 import PremiumAudioPlayer from '../components/ui/PremiumAudioPlayer'
+import { usePreloadAudios } from '../hooks/usePreloadAudios'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, RotateCcw, Trophy, Lock, Sparkles } from 'lucide-react'
 import { playSuccess, playError, playVictory, playPoints } from '../utils/soundEffects'
-import { AuditingMetrics, estimateConfidence } from '../utils/auditingMetrics'
+import { AuditingMetrics, estimateConfidence, calculateDifficulty } from '../utils/auditingMetrics'
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
 
-const TOTAL_QUESTIONS = 10
+const TOTAL_QUESTIONS = 12
 const POINTS_PER_CORRECT = 25
 
 export default function EcouteReconnaissance() {
@@ -48,10 +49,11 @@ export default function EcouteReconnaissance() {
 
     // Use SRS to select priority letters
     const letterKeys = availableLetters.map(l => `letter_${l.id}`)
-    const priorityKeys = selectItemsForReview(letterKeys, srsItems, Math.min(TOTAL_QUESTIONS, availableLetters.length), srsSessionCount)
+    const priorityKeys = selectItemsForReview(letterKeys, srsItems, TOTAL_QUESTIONS, srsSessionCount)
 
     const qs = []
     for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+      // On boucle sur les clés prioritaires si on demande plus de questions que de lettres disponibles
       const key = priorityKeys[i % priorityKeys.length]
       const letterId = parseInt(key.replace('letter_', ''))
       const correct = availableLetters.find(l => l.id === letterId) || availableLetters[0]
@@ -65,6 +67,18 @@ export default function EcouteReconnaissance() {
   }, [availableLetters, srsItems, srsSessionCount])
 
   useEffect(() => { setQuestions(generateQuestions()) }, [])
+
+  const allAudioUrls = useMemo(() => {
+    const urls = []
+    questions.forEach(q => {
+      q.options.forEach(opt => {
+        if (opt.audio) urls.push(opt.audio)
+      })
+    })
+    return urls
+  }, [questions])
+
+  usePreloadAudios(allAudioUrls)
 
   // Session management
   useEffect(() => {
@@ -94,7 +108,12 @@ export default function EcouteReconnaissance() {
     setIsCorrect(correct)
 
     const responseTime = Date.now() - questionStartRef.current
-    const difficulty = 3
+    const difficulty = calculateDifficulty({
+      questionText: current.correct.lettre,
+      optionCount: current.options.length,
+      hasAudio: true,
+      module: 'ecoute'
+    })
     const confidence = estimateConfidence(responseTime, difficulty)
 
     // Record in SRS
@@ -123,7 +142,7 @@ export default function EcouteReconnaissance() {
     }
 
     setTimeout(() => {
-      if (questionIndex + 1 >= TOTAL_QUESTIONS) {
+      if (questionIndex + 1 >= questions.length) {
         setGameOver(true)
         playVictory()
         AuditingMetrics.endSession(sessionIdRef.current)
@@ -153,14 +172,14 @@ export default function EcouteReconnaissance() {
   if (gameOver) {
     return (
       <motion.div className="max-w-md mx-auto text-center py-16" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-        <div className="text-7xl mb-4">{score >= TOTAL_QUESTIONS * POINTS_PER_CORRECT * 0.7 ? '🎉' : '💪'}</div>
+        <div className="text-7xl mb-4">{score >= questions.length * POINTS_PER_CORRECT * 0.7 ? '🎉' : '💪'}</div>
         <h2 className="text-3xl font-black text-slate-800 dark:text-slate-100 mb-2">أحسنت يا {activeProfile.prenom}!</h2>
         <p className="font-arabic text-2xl text-brand-600 mb-4" dir="rtl">أَحْسَنْتَ!</p>
         <div className="bg-white dark:bg-slate-800 rounded-2xl card-shadow p-6 mb-6">
           <div className="flex items-center justify-center gap-2 text-4xl font-black text-gold-500 mb-2">
             <Trophy className="h-8 w-8" /> {score}
           </div>
-          <p className="text-slate-500 font-medium">نقاط مكتسبة من أصل {TOTAL_QUESTIONS * POINTS_PER_CORRECT}</p>
+          <p className="text-slate-500 font-medium">نقاط مكتسبة من أصل {questions.length * POINTS_PER_CORRECT}</p>
 
           {/* SRS mini-recap */}
           <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
@@ -210,14 +229,25 @@ export default function EcouteReconnaissance() {
           <span className={`text-xs font-black px-2 py-0.5 rounded-full bg-gradient-to-r ${levelInfo?.color || 'from-brand-400 to-brand-600'} text-white`}>
             {levelInfo?.emoji} {levelInfo?.name}
           </span>
-          <span className="font-bold text-sm text-slate-500">{questionIndex + 1}/{TOTAL_QUESTIONS}</span>
+          <span className="font-bold text-sm text-slate-500">{questionIndex + 1}/{questions.length}</span>
         </div>
         <span className="bg-gold-100 text-gold-600 px-3 py-1 rounded-full font-bold text-sm">⭐ {score}</span>
       </div>
 
       {/* Progress */}
       <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full mb-8 overflow-hidden">
-        <div className="h-full bg-gradient-to-r from-brand-400 to-brand-600 rounded-full transition-all duration-500" style={{ width: `${((questionIndex) / TOTAL_QUESTIONS) * 100}%` }} />
+        <div className="h-full bg-gradient-to-r from-brand-400 to-brand-600 rounded-full transition-all duration-500" style={{ width: `${((questionIndex) / questions.length) * 100}%` }} />
+      </div>
+
+      {/* Audio Button (outside AnimatePresence to avoid destroy/recreate) */}
+      <div className="flex justify-center mb-8">
+        <PremiumAudioPlayer
+          key={current.correct.id}
+          url={current.correct.audio}
+          fallbackText={current.correct.lettre}
+          size="xl"
+          autoPlay
+        />
       </div>
 
       {/* Question */}
@@ -231,15 +261,6 @@ export default function EcouteReconnaissance() {
         >
           <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">أي حرف تسمع؟</h2>
           <p className="font-arabic text-lg text-brand-600 mb-6" dir="rtl">أَيُّ حَرْفٍ تَسْمَعُ؟</p>
-
-          {/* Audio Button */}
-          <div className="flex justify-center mb-8">
-            <PremiumAudioPlayer
-              url={current.correct.audio}
-              fallbackText={current.correct.lettre}
-              size="xl"
-            />
-          </div>
 
           {/* Options Grid */}
           <div className="grid grid-cols-2 gap-4">

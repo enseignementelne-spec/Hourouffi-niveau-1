@@ -30,7 +30,7 @@ export default function BadgesPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {badges.map((badge, i) => {
-          const unlocked = stats.badges?.includes(badge.id) || badge.condition(stats)
+          const unlocked = stats.badges?.includes(badge.id) || false
           
           return (
             <motion.div
@@ -74,16 +74,19 @@ export default function BadgesPage() {
                     {badge.description}
                   </p>
 
-                  {/* Progress Bar (simplified) */}
+                   {/* Progress Bar */}
                   {!unlocked && (
                     <div className="mt-4">
-                       <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                       <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex items-center">
                           <div 
                             className="h-full bg-slate-300 rounded-full transition-all duration-1000" 
-                            style={{ width: '30%' }} // Note: In a real app, calculate progress based on condition
+                            style={{ width: `${badge.getProgress(stats)}%` }}
                           />
                        </div>
-                       <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">قيد التنفيذ</p>
+                       <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider flex justify-between">
+                         <span>قيد التنفيذ</span>
+                         <span>{badge.getProgress(stats)}%</span>
+                       </p>
                     </div>
                   )}
                 </div>

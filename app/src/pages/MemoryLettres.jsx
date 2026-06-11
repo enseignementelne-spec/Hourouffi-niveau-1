@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { useProfileStore } from '../store/useProfileStore'
 import { useGameStore } from '../store/useGameStore'
-import { lettresPrioritaires } from '../data/alphabet'
+import { useSRSStore } from '../store/useSRSStore'
+import { getAvailableLetters, getCurrentLevel, getMemoryPairs } from '../data/curriculum'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
 import { motion } from 'framer-motion'
 import { ArrowLeft, RotateCcw, Trophy } from 'lucide-react'
@@ -15,7 +16,8 @@ export default function MemoryLettres() {
   const activeProfile = useProfileStore(s => s.getActiveProfile())
   const addPoints = useProfileStore(s => s.addPoints)
   const addResult = useGameStore(s => s.addResult)
-
+  const srsItems = useSRSStore(s => s.getProfileItems(activeProfile?.id))
+  
   const [cards, setCards] = useState([])
   const [flipped, setFlipped] = useState([])
   const [matched, setMatched] = useState([])
@@ -25,8 +27,12 @@ export default function MemoryLettres() {
   const [timer, setTimer] = useState(0)
   const [timerActive, setTimerActive] = useState(false)
 
+  const currentLevel = getCurrentLevel(srsItems)
+  const memoryPairsCount = getMemoryPairs(currentLevel)
+  const availableLetters = getAvailableLetters(currentLevel)
+
   const initGame = useCallback(() => {
-    const selected = shuffle(lettresPrioritaires).slice(0, 6)
+    const selected = shuffle(availableLetters).slice(0, memoryPairsCount)
     const pairs = selected.flatMap(l => [
       { uid: `${l.id}-a-${Math.random()}`, lettreId: l.id, display: l.lettre, color: l.color, type: 'lettre' },
       { uid: `${l.id}-b-${Math.random()}`, lettreId: l.id, display: l.lettre, color: l.color, type: 'lettre' },
@@ -67,10 +73,10 @@ export default function MemoryLettres() {
         setMatched(newMatched)
         setFlipped([])
         playSuccess()
-        if (newMatched.length === 6) {
+        if (newMatched.length === memoryPairsCount) {
           setTimerActive(false)
           setShowConfetti(true)
-          const pts = Math.max(10, 120 - moves * 2)
+          const pts = Math.max(10, (memoryPairsCount * 20) - moves * 2)
           addPoints(pts)
           addResult(activeProfile.id, { type: 'memory', completed: true, moves, time: timer })
           playVictory()
@@ -87,7 +93,7 @@ export default function MemoryLettres() {
   const formatTime = (s) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`
 
   if (gameOver) {
-    const pts = Math.max(10, 120 - moves * 2)
+    const pts = Math.max(10, (memoryPairsCount * 20) - moves * 2)
     return (
       <motion.div className="max-w-md mx-auto text-center py-16" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
         <div className="text-7xl mb-4">🏆</div>
@@ -155,7 +161,7 @@ export default function MemoryLettres() {
       </div>
 
       <p className="text-center text-sm text-slate-400 font-medium mt-4">
-        {matched.length}/6 أزواج مكتشفة
+        {matched.length}/{memoryPairsCount} أزواج مكتشفة
       </p>
     </div>
   )

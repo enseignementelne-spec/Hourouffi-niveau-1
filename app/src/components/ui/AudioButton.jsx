@@ -1,20 +1,19 @@
-import React, { useState } from 'react'
-import { Volume2 } from 'lucide-react'
-import { playAudio } from '../../utils/audioPlayer'
+import React, { useEffect } from 'react'
+import { Volume2, Loader2 } from 'lucide-react'
+import { useRobustAudio } from '../../services/audioService'
+import { useAppStore } from '../../store/useAppStore'
 
 export default function AudioButton({ audioPath, speakText = '', size = 'md', label, className = '' }) {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [isDisabled, setIsDisabled] = useState(false)
+  const { status, play, stop } = useRobustAudio(audioPath, speakText)
+  const soundEnabled = useAppStore((s) => s.soundEnabled)
+
+  useEffect(() => {
+    return () => stop()
+  }, [stop])
 
   const handlePlay = () => {
-    if (isDisabled) return
-    setIsPlaying(true)
-    setIsDisabled(true)
-    playAudio(audioPath, speakText)
-    setTimeout(() => {
-      setIsPlaying(false)
-      setIsDisabled(false)
-    }, 2000)
+    if (!soundEnabled) return
+    play()
   }
 
   const sizes = {
@@ -31,17 +30,27 @@ export default function AudioButton({ audioPath, speakText = '', size = 'md', la
     xl: 'h-12 w-12',
   }
 
+  const isPlaying = status === 'playing'
+  const isLoading = status === 'loading'
+
   return (
     <button
       onClick={handlePlay}
+      disabled={isLoading}
       className={`${sizes[size]} rounded-full flex items-center justify-center transition-all duration-300 ${
         isPlaying
           ? 'bg-brand-500 text-white scale-110 shadow-lg shadow-brand-300'
-          : 'bg-brand-100 text-brand-700 hover:bg-brand-200 hover:scale-105'
+          : isLoading
+            ? 'bg-slate-100 text-slate-400 cursor-wait'
+            : 'bg-brand-100 text-brand-700 hover:bg-brand-200 hover:scale-105'
       } ${className}`}
       title={label || 'استمع'}
     >
-      <Volume2 className={`${iconSizes[size]} ${isPlaying ? 'animate-pulse' : ''}`} />
+      {isLoading ? (
+        <Loader2 className={`${iconSizes[size]} animate-spin`} />
+      ) : (
+        <Volume2 className={`${iconSizes[size]} ${isPlaying ? 'animate-pulse' : ''}`} />
+      )}
     </button>
   )
 }

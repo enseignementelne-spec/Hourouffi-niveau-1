@@ -9,6 +9,8 @@ export const useSRSStore = create(
       items: {},
       // { profileId: sessionCount }
       sessionCounts: {},
+      // { profileId: lastDateString }
+      lastSessionDates: {},
 
       getProfileItems: (profileId) => {
         return get().items[profileId] || {}
@@ -33,12 +35,23 @@ export const useSRSStore = create(
         }
       }),
 
-      incrementSession: (profileId) => set(state => ({
-        sessionCounts: {
-          ...state.sessionCounts,
-          [profileId]: (state.sessionCounts[profileId] || 0) + 1,
+      incrementSession: (profileId) => set(state => {
+        const today = new Date().toDateString()
+        const lastDate = state.lastSessionDates?.[profileId]
+
+        if (lastDate === today) return state
+
+        return {
+          sessionCounts: {
+            ...state.sessionCounts,
+            [profileId]: (state.sessionCounts[profileId] || 0) + 1,
+          },
+          lastSessionDates: {
+            ...state.lastSessionDates,
+            [profileId]: today,
+          }
         }
-      })),
+      }),
 
       getSessionCount: (profileId) => {
         return get().sessionCounts[profileId] || 0
@@ -49,7 +62,9 @@ export const useSRSStore = create(
         delete newItems[profileId]
         const newCounts = { ...state.sessionCounts }
         delete newCounts[profileId]
-        return { items: newItems, sessionCounts: newCounts }
+        const newDates = { ...state.lastSessionDates }
+        delete newDates[profileId]
+        return { items: newItems, sessionCounts: newCounts, lastSessionDates: newDates }
       }),
     }),
     { name: 'hurufi-srs' }

@@ -7,6 +7,7 @@ import { phonemes } from '../data/phonemes'
 import { getAvailablePhonemes, getCurrentLevel, CURRICULUM_LEVELS } from '../data/curriculum'
 import { selectItemsForReview } from '../utils/srsAlgorithm'
 import PremiumAudioPlayer from '../components/ui/PremiumAudioPlayer'
+import { usePreloadAudios } from '../hooks/usePreloadAudios'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, RotateCcw, Trophy, Lock } from 'lucide-react'
@@ -44,6 +45,12 @@ export default function DistinctionPhonemes() {
   const [showConfetti, setShowConfetti] = useState(false)
   const [gameOver, setGameOver] = useState(false)
   const [targetIsFirst, setTargetIsFirst] = useState(() => Math.random() > 0.5)
+
+  // Preload audios for performance
+  const allAudioUrls = useMemo(() => {
+    return orderedPhonemes.flatMap(p => [p.lettre1.audio, p.lettre2.audio]).filter(Boolean)
+  }, [orderedPhonemes])
+  usePreloadAudios(allAudioUrls)
 
   // Timing
   const sessionIdRef = useRef(`phon_${Date.now()}`)
@@ -186,6 +193,16 @@ export default function DistinctionPhonemes() {
         <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-500" style={{ width: `${(currentIndex / orderedPhonemes.length) * 100}%` }} />
       </div>
 
+      <div className="flex justify-center mb-8">
+        <PremiumAudioPlayer
+          key={`${currentIndex}-${target.caractere}`}
+          url={target.audio}
+          fallbackText={target.caractere}
+          size="xl"
+          autoPlay
+        />
+      </div>
+
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
@@ -199,16 +216,8 @@ export default function DistinctionPhonemes() {
           <p className="text-sm text-slate-400 font-medium mb-2">{current.lettre1.nom} ({current.lettre1.type}) vs {current.lettre2.nom} ({current.lettre2.type})</p>
           <p className="font-arabic text-lg text-brand-600 mb-6" dir="rtl">أَيُّ صَوْتٍ تَسْمَعُ؟</p>
 
-          <div className="flex justify-center mb-8">
-            <PremiumAudioPlayer
-              url={current.audio}
-              fallbackText={`${current.lettre1.caractere} ${current.lettre2.caractere}`}
-              size="xl"
-            />
-          </div>
-
-          <p className="text-sm text-slate-500 font-medium mb-4">
-            اضغط على الصوت <strong className="text-brand-600">{target.nom}</strong> ({target.type})
+          <p className="text-sm text-slate-500 font-medium mb-4" dir="rtl">
+            استمع بعناية ثم اختر الحرف المطابق للصوت
           </p>
 
           <div className="grid grid-cols-2 gap-4">

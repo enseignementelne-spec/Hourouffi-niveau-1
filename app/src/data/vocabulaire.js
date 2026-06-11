@@ -72,11 +72,11 @@ const rawCategories = [
     id: 'famille', nom: 'La famille', nomAr: 'العَائِلَة', emoji: '👨‍👩‍👧‍👦',
     mots: [
       { fr: 'Papa', ar: 'بَابَا / أَب', translit: 'Bābā', image: '/resources/images/vocabulaire/famille-1.webp' },
-      { fr: 'Maman', ar: 'مَامَا / أُمّ', translit: 'Māmā', image: '/resources/images/vocabulaire/famille-2.webp' },
-      { fr: 'Frère', ar: 'أَخ', translit: 'Akh', image: '/resources/images/vocabulaire/famille-3.webp' },
-      { fr: 'Sœur', ar: 'أُخْت', translit: 'Ukht', image: '/resources/images/vocabulaire/famille-4.webp' },
-      { fr: 'Grand-père', ar: 'جَدّ', translit: 'Jadd', image: '/resources/images/vocabulaire/famille-5.webp' },
-      { fr: 'Grand-mère', ar: 'جَدَّة', translit: 'Jadda', image: '/resources/images/vocabulaire/famille-6.webp' },
+      { fr: 'Maman', ar: 'مَامَا / أُمّ', translit: 'Māmā', image: '/resources/images/vocabulaire/famille-2.png' },
+      { fr: 'Frère', ar: 'أَخ', translit: 'Akh', image: '/resources/images/vocabulaire/famille-3.png' },
+      { fr: 'Sœur', ar: 'أُخْت', translit: 'Ukht', image: '/resources/images/vocabulaire/famille-4.png' },
+      { fr: 'Grand-père', ar: 'جَدّ', tts: 'جَدْ', translit: 'Jadd', image: '/resources/images/vocabulaire/famille-5.png' },
+      { fr: 'Grand-mère', ar: 'جَدَّة', tts: 'جَدَّةٌ', translit: 'Jadda', image: '/resources/images/vocabulaire/famille-6.png' },
     ]
   },
   {
@@ -90,9 +90,11 @@ const rawCategories = [
   {
     id: 'corps', nom: 'Le corps', nomAr: 'جِسْمُ الإِنْسَان', emoji: '🧍',
     mots: [
-      { fr: 'Tête', ar: 'رَأْس', translit: "Ra's" }, { fr: 'Main', ar: 'يَد', translit: 'Yad' },
-      { fr: 'Pied', ar: 'رِجْل', translit: 'Rijl' }, { fr: 'Œil', ar: 'عَيْن', translit: "'Ayn" },
-      { fr: 'Bouche', ar: 'فَم', translit: 'Fam' },
+      { fr: 'Tête', ar: 'رَأْس', translit: "Ra's", image: '/resources/images/vocabulaire/corps-1.svg' },
+      { fr: 'Main', ar: 'يَد', translit: 'Yad', image: '/resources/images/vocabulaire/corps-2.svg' },
+      { fr: 'Pied', ar: 'رِجْل', translit: 'Rijl', image: '/resources/images/vocabulaire/corps-3.svg' },
+      { fr: 'Œil', ar: 'عَيْن', translit: "'Ayn", image: '/resources/images/vocabulaire/corps-4.svg' },
+      { fr: 'Bouche', ar: 'فَم', translit: 'Fam', image: '/resources/images/vocabulaire/corps-5.svg' },
     ]
   },
   {
@@ -103,26 +105,27 @@ const rawCategories = [
       { fr: 'Lait', ar: 'حَلِيب', translit: 'Ḥalīb', image: '/resources/images/vocabulaire/nourriture-3.png' }, 
       { fr: 'Pomme', ar: 'تُفَّاحَة', translit: 'Tuffāḥa', image: '/resources/images/vocabulaire/nourriture-4.png' },
       { fr: 'Banane', ar: 'مَوْزَة', translit: 'Mawza', image: '/resources/images/vocabulaire/nourriture-5.png' }, 
-      { fr: 'Jus', ar: 'عَصِير', translit: "'Aṣīr" },
-      { fr: 'Gâteau', ar: 'كَعْكَة', translit: "Ka'ka" }, { fr: 'Bonbon', ar: 'حَلْوَى', translit: 'Ḥalwā' },
+      { fr: 'Jus', ar: 'عَصِير', translit: "'Aṣīr", image: '/resources/images/vocabulaire/nourriture-6.svg' },
+      { fr: 'Gâteau', ar: 'كَعْكَة', translit: "Ka'ka", image: '/resources/images/vocabulaire/nourriture-7.svg' },
+      { fr: 'Bonbon', ar: 'حَلْوَى', translit: 'Ḥalwā', image: '/resources/images/vocabulaire/nourriture-8.svg' },
     ]
   },
   {
     id: 'consignes', nom: 'Consignes de classe', nomAr: 'تَعْلِيمَات', emoji: '📣',
     mots: [
-      { fr: 'Assieds-toi', ar: 'اِجْلِسْ', translit: 'Ijlis' },
-      { fr: 'Lève-toi', ar: 'قِفْ', translit: 'Qif' },
-      { fr: 'Regarde', ar: 'اُنْظُرْ', translit: 'Unẓur' },
-      { fr: 'Écoute', ar: 'اِسْتَمِعْ', translit: "Istami'" },
-      { fr: 'Bravo !', ar: 'أَحْسَنْتَ', translit: 'Aḥsanta' },
+      { fr: 'Assieds-toi', ar: 'اِجْلِسْ', translit: 'Ijlis', image: '/resources/images/vocabulaire/consignes-1.svg' },
+      { fr: 'Lève-toi', ar: 'قِفْ', translit: 'Qif', image: '/resources/images/vocabulaire/consignes-2.svg' },
+      { fr: 'Regarde', ar: 'اُنْظُرْ', translit: 'Unẓur', image: '/resources/images/vocabulaire/consignes-3.svg' },
+      { fr: 'Écoute', ar: 'اِسْتَمِعْ', translit: "Istami'", image: '/resources/images/vocabulaire/consignes-4.svg' },
+      { fr: 'Bravo !', ar: 'أَحْسَنْتَ', translit: 'Aḥsanta', image: '/resources/images/vocabulaire/consignes-5.svg' },
     ]
   },
   {
     id: 'religieux', nom: 'Vocabulaire religieux', nomAr: 'مُفْرَدَات دِينِيَّة', emoji: '🕌',
     mots: [
-      { fr: 'Au nom de Dieu', ar: 'بِسْمِ الله', translit: 'Bismillāh' },
-      { fr: 'Louange à Dieu', ar: 'الحَمْدُ لِله', translit: 'Al-ḥamdu lillāh' },
-      { fr: 'Si Dieu le veut', ar: 'إِنْ شَاءَ الله', translit: "In sha'a Allah" },
+      { fr: 'Au nom de Dieu', ar: 'بِسْمِ الله', translit: 'Bismillāh', image: '/resources/images/vocabulaire/religieux-1.svg' },
+      { fr: 'Louange à Dieu', ar: 'الحَمْدُ لِله', translit: 'Al-ḥamdu lillāh', image: '/resources/images/vocabulaire/religieux-2.svg' },
+      { fr: 'Si Dieu le veut', ar: 'إِنْ شَاءَ الله', translit: "In sha'a Allah", image: '/resources/images/vocabulaire/religieux-3.svg' },
     ]
   },
   {
@@ -141,7 +144,7 @@ export const categories = rawCategories.map((cat) => ({
   ...cat,
   mots: cat.mots.map((mot, index) => ({
     ...mot,
-    image: mot.image || '/resources/images/placeholder-word.svg',
+    image: mot.image || (cat.id === 'couleurs' || cat.id === 'nombres' ? null : '/resources/images/placeholder-word.svg'),
     audio: mot.audio || `/resources/audio/vocabulaire/${cat.id}-${index + 1}.mp3`,
   })),
 }))

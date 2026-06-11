@@ -89,6 +89,7 @@ export default function TracageLettres() {
     setHasDrawn(false)
     setValidated(false)
     setValidationResult(null)
+    setShowConfetti(false)
     tracePointsRef.current = []
   }
 

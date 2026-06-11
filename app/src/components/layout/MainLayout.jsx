@@ -1,6 +1,6 @@
 import React from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
-import { Shield, LogOut, BookOpen, BarChart3, Moon, Sun } from 'lucide-react'
+import { Shield, LogOut, BookOpen, BarChart3, Moon, Sun, Volume2, VolumeX } from 'lucide-react'
 import { useProfileStore } from '../../store/useProfileStore'
 import { useAppStore } from '../../store/useAppStore'
 
@@ -9,6 +9,8 @@ export default function MainLayout() {
   const setActiveProfile = useProfileStore((s) => s.setActiveProfile)
   const darkMode = useAppStore((s) => s.darkMode)
   const toggleDarkMode = useAppStore((s) => s.toggleDarkMode)
+  const soundEnabled = useAppStore((s) => s.soundEnabled)
+  const toggleSound = useAppStore((s) => s.toggleSound)
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -26,16 +28,19 @@ export default function MainLayout() {
       </Link>
 
       <div className="flex items-center gap-3 sm:gap-5">
-        <Link to="/dashboard-enfant" className="flex items-center gap-1.5 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 px-3 py-1.5 rounded-xl font-bold text-sm hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors">
+        <Link to="/dashboard-enfant" className="flex items-center gap-1.5 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 p-2 sm:px-3 sm:py-1.5 rounded-xl font-bold text-sm hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors">
           <BarChart3 className="h-4 w-4" />
           <span className="hidden sm:inline">تقدمي</span>
         </Link>
 
-        <Link to="/maitresse" className="flex items-center gap-1.5 text-sm font-bold text-slate-400 hover:text-brand-600 transition-colors">
+        <Link to="/maitresse" className="flex items-center gap-1.5 text-sm font-bold text-slate-400 hover:text-brand-600 transition-colors p-2 sm:p-0">
           <BookOpen className="h-4 w-4" />
           <span className="hidden sm:inline">فضاء المعلمة</span>
         </Link>
 
+        <button onClick={toggleSound} className="p-2 text-slate-400 hover:text-brand-500 transition-colors" title={soundEnabled ? 'Couper le son' : 'Activer le son'}>
+          {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+        </button>
         <button onClick={toggleDarkMode} className="p-2 text-slate-400 hover:text-brand-500 transition-colors" title="Thème sombre">
           {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </button>
@@ -73,6 +78,9 @@ export default function MainLayout() {
         <span className="font-black text-lg text-slate-800 dark:text-white">حروفي</span>
       </Link>
       <div className="flex items-center gap-4">
+        <button onClick={toggleSound} className="p-2 text-slate-400 hover:text-brand-500 transition-colors" title={soundEnabled ? 'Couper le son' : 'Activer le son'}>
+          {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+        </button>
         <button onClick={toggleDarkMode} className="p-2 text-slate-400 hover:text-brand-500 transition-colors" title="Thème sombre">
           {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </button>

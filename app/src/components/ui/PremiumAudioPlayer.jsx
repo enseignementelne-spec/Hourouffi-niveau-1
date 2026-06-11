@@ -1,24 +1,44 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Volume2, Loader2, AlertCircle, Play } from 'lucide-react'
-import { useRobustAudio } from '../../hooks/useRobustAudio'
+import { useRobustAudio, normalizeAudioPath } from '../../services/audioService'
+import { useAppStore } from '../../store/useAppStore'
 
 /**
  * Composant Audio Premium avec gestion d'états (Loading, Error, Playing)
  * Inspiré par les recommandations de bonnes pratiques pédagogiques.
  */
-export default function PremiumAudioPlayer({ url, fallbackText, size = 'md', className = '' }) {
+export default function PremiumAudioPlayer({ url, fallbackText, size = 'md', className = '', autoPlay = false }) {
   const [fullUrl, setFullUrl] = useState(url)
   const { status, play, stop } = useRobustAudio(fullUrl, fallbackText)
+  const soundEnabled = useAppStore((s) => s.soundEnabled)
 
   useEffect(() => {
-    // Préfixe avec l'URL publique si c'est un chemin relatif
-    if (url && !url.startsWith('http') && !url.startsWith('blob:')) {
+    if (url) {
       const base = import.meta.env.BASE_URL || ''
-      setFullUrl(`${base}${url.startsWith('/') ? '' : '/'}${url}`)
+      const path = `${base.replace(/\/+$/, '')}${normalizeAudioPath(url)}`
+      setFullUrl(path)
     } else {
       setFullUrl(url)
     }
   }, [url])
+
+  const hasAutoPlayedRef = useRef(false)
+  useEffect(() => {
+    if (!autoPlay || !url || status !== 'ready') return
+    if (!hasAutoPlayedRef.current) {
+      hasAutoPlayedRef.current = true
+      handlePlay()
+    }
+  }, [autoPlay, url, status])
+
+  useEffect(() => {
+    return () => stop()
+  }, [stop])
+
+  const handlePlay = () => {
+    if (!soundEnabled) return
+    play()
+  }
   
   const sizes = {
     sm: 'h-10 w-10 p-2',
@@ -57,8 +77,8 @@ export default function PremiumAudioPlayer({ url, fallbackText, size = 'md', cla
         }
       default:
         return { 
-          bg: 'bg-white dark:bg-slate-800 text-brand-600 border-2 border-brand-100 hover:border-brand-400 hover:scale-105 shadow-sm', 
-          icon: <Play size={iconSizes[size]} className="ml-1" />, // Play icon for idle
+          bg: 'bg-white dark:bg-slate-800 text-brand-600 border-2 border-brand-100 hover:border-brand-400 hover:scale-105 shadow-lg shadow-brand-200/50 dark:shadow-slate-900/50', 
+          icon: <Play size={iconSizes[size]} className="ml-1" />,
           cursor: 'cursor-pointer'
         }
     }
@@ -69,14 +89,13 @@ export default function PremiumAudioPlayer({ url, fallbackText, size = 'md', cla
   return (
     <div className={`relative inline-block ${className}`}>
       <button
-        onClick={play}
+        onClick={handlePlay}
         disabled={status === 'loading' || status === 'playing'}
         className={`${sizes[size]} rounded-[2rem] flex items-center justify-center transition-all duration-300 ${config.bg} ${config.cursor}`}
       >
         {config.icon}
       </button>
       
-      {/* Étiquette discrète pour le feedback TTS */}
       {status === 'error' && (
         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-black text-amber-600 uppercase tracking-tighter">
           Mode Secours

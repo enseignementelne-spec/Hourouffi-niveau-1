@@ -1,16 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { useProfileStore } from '../store/useProfileStore'
+import { useGameStore } from '../store/useGameStore'
+import { useSRSStore } from '../store/useSRSStore'
+import { getAvailableConversationIds, getCurrentLevel } from '../data/curriculum'
 import { conversations } from '../data/conversations'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Volume2, MessageCircle, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Volume2, MessageCircle, CheckCircle2, Lock } from 'lucide-react'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
-import { playSuccess, playError, playVictory } from '../utils/soundEffects'
+import { playSuccess, playError, playVictory, playPoints } from '../utils/soundEffects'
 import { AuditingMetrics, calculateDifficulty, estimateConfidence } from '../utils/auditingMetrics'
 import PremiumAudioPlayer from '../components/ui/PremiumAudioPlayer'
 
 export default function Conversation() {
   const activeProfile = useProfileStore(s => s.getActiveProfile())
+  const addPoints = useProfileStore(s => s.addPoints)
+  const addResult = useGameStore(s => s.addResult)
+  const srsItems = useSRSStore(s => s.getProfileItems(activeProfile?.id))
+  
   const [currentScenario, setCurrentScenario] = useState(0)
   const [currentRound, setCurrentRound] = useState(0)
   const [selectedOption, setSelectedOption] = useState(null)
@@ -22,6 +29,11 @@ export default function Conversation() {
   const roundStartRef = useRef(Date.now())
 
   if (!activeProfile) return <Navigate to="/" replace />
+
+  // Curriculum integration
+  const currentLevel = getCurrentLevel(srsItems)
+  const availableIds = getAvailableConversationIds(currentLevel)
+  const availableConversations = conversations.filter(c => availableIds.includes(c.id))
 
   // Start session on mount
   useEffect(() => {
@@ -37,7 +49,20 @@ export default function Conversation() {
     roundStartRef.current = Date.now()
   }, [currentRound, currentScenario])
 
-  const scenario = conversations[currentScenario]
+  if (availableConversations.length === 0) {
+    return (
+      <div className="max-w-md mx-auto text-center py-20">
+        <div className="text-6xl mb-4"><Lock className="h-16 w-16 text-slate-300 mx-auto" /></div>
+        <h2 className="text-2xl font-black text-slate-700 dark:text-slate-200 mb-2">مقفل</h2>
+        <p className="text-slate-400 font-medium mb-6">أكمل المستويات السابقة لفتح المحادثات</p>
+        <Link to="/modules" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-600 text-white font-bold">
+          <ArrowLeft className="h-4 w-4" /> رجوع
+        </Link>
+      </div>
+    )
+  }
+
+  const scenario = availableConversations[currentScenario]
   const round = scenario.rounds[currentRound]
 
   const handleOptionClick = (option, index) => {
@@ -79,7 +104,10 @@ export default function Conversation() {
       } else {
         setShowConfetti(true)
         setIsCompleted(true)
+        addPoints(15)
+        addResult(activeProfile.id, { type: 'conversation', completed: true, scenarioId: scenario.id })
         playVictory()
+        playPoints()
       }
     } else {
       playError()
@@ -104,7 +132,7 @@ export default function Conversation() {
   }
 
   const nextScenario = () => {
-    if (currentScenario + 1 < conversations.length) {
+    if (currentScenario + 1 < availableConversations.length) {
       setCurrentScenario(s => s + 1)
       setCurrentRound(0)
       setSelectedOption(null)
@@ -201,7 +229,7 @@ export default function Conversation() {
               <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-2">أحسنت!</h3>
               <p className="text-slate-500 mb-8">لقد أكملت هذا الحوار بنجاح</p>
               
-              {currentScenario + 1 < conversations.length ? (
+              {currentScenario + 1 < availableConversations.length ? (
                 <button
                   onClick={nextScenario}
                   className="bg-brand-600 text-white px-8 py-4 rounded-2xl font-black text-lg shadow-lg shadow-brand-200 hover:bg-brand-700 transition-all hover:-translate-y-1 active:scale-95"
