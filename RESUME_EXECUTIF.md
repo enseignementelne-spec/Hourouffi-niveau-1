@@ -8,8 +8,8 @@
 | **Public** | 4 enfants + 2 maîtresses (France) |
 | **Durée MVP** | 3 semaines (mai-juin 2026) |
 | **Lancement** | Septembre 2026 |
-| **Budget** | ~10€/an (gratuit en MVP) |
-| **Stack** | Bubble.io + Airtable (No-code) |
+| **Budget** | ~10€/an (gratuit en MVP, hébergement Vercel/Netlify ou GitLab Pages) |
+| **Stack** | React + Vite + Zustand + Tailwind CSS (PWA 100% Locale) |
 
 ---
 
@@ -74,14 +74,14 @@ SEPTEMBRE 2026: LAUNCH! 🚀
 
 | Item | Coût | Justif |
 |------|------|--------|
-| Bubble.io | Gratuit | Plan starter |
-| Airtable | Gratuit | Suffisant 4 enfants |
-| Domaine | ~10€/an | Optionnel (Bubble URL OK) |
+| Github/Gitlab | Gratuit | Hébergement code |
+| Vercel/Netlify | Gratuit | Hébergement de l'application (PWA) |
+| Domaine | ~10€/an | Optionnel (URL gratuite OK) |
 | **TOTAL** | **10€/an** | Super éco! |
 
 **Possible escalade (V2+):**
-- Bubble Pro: 29€/mois (si 100+ utilisateurs)
-- Airtable Pro: 20€/mois (si données volumineuses)
+- Hébergement payant si trafic important
+- Services API (TTS premium) si besoin d'audio dynamique
 
 ---
 
@@ -99,10 +99,10 @@ SEPTEMBRE 2026: LAUNCH! 🚀
 = ~2-3h design (Canva)
 ```
 
-### Code (Bubble)
+### Code (React/Vite)
 ```
-5 Exercices + Dashboard
-= ~30h no-code (débutant Bubble: +20h apprentissage)
+7 Exercices + Dashboard + Profils persistants
+= Application codée sur mesure, 100% hors ligne et PWA ready.
 ```
 
 **Total travail: ~80h distribué**
@@ -184,14 +184,14 @@ SEPTEMBRE 2026: LAUNCH! 🚀
 3. [ ] Recueillir prénoms 4 enfants
 
 **DEMAIN - JOUR 2:**
-4. [ ] Créer comptes Bubble + Airtable
+4. [ ] Mettre en place le dépôt Git et l'hébergement
 5. [ ] Tester enregistrement audio (1 lettre)
 6. [ ] Préparer dossiers projet
 
 **JOURS 3-7 (S0 - Cette semaine):**
 7. [ ] Enregistrer 54 audios (T2-3)
-8. [ ] Créer/Télécharger 60 images (T4-5)
-9. [ ] Setup Bubble + Airtable complet (T1,6)
+8. [ ] Créer/Télécharger images (T4-5)
+9. [ ] Setup projet React finalisé (T1,6)
 
 **LUNDI PROCHAIN (S1 officielle):**
 → Démarrer PLAN_ACTION_3_SEMAINES.md
@@ -204,8 +204,8 @@ SEPTEMBRE 2026: LAUNCH! 🚀
 |---|--------|-----------|
 | 1 | Audio mauvaise qualité | Tester jour 1, refaire besoin |
 | 2 | Timeline glisse | Checkpoint quotidien |
-| 3 | Bubble trop complexe | Utiliser templates |
-| 4 | Données perdues | Backup quotidien cloud |
+| 3 | Intégration audio complexe | Utiliser un script de validation |
+| 4 | Données perdues | Sauvegarde/Export prévu dans le Dashboard |
 | 5 | Enfants frustrés | Exercices faciles prioritaires |
 
 ---
@@ -243,8 +243,8 @@ SEPTEMBRE 2026: LAUNCH! 🚀
 **Q: Et si je n'ai pas le temps?**
 A: MVP minimum = 3 lettres + memory + 1 phonème. 1 semaine suffisait.
 
-**Q: Bubble c'est difficile?**
-A: Non, très no-code. 5-10h d'apprentissage pour débutant.
+**Q: L'application fonctionne sans internet ?**
+A: Oui, c'est une PWA locale (Progressive Web App). Après le premier chargement, elle fonctionne 100% hors-ligne.
 
 **Q: Quand les enfants commencent?**
 A: Septembre 2026 (planifié). Beta mid-août avec 1-2 enfants.

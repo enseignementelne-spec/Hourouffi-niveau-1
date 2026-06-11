@@ -1,0 +1,270 @@
+﻿Association de la FraternitÃ© d'Elne
+Programme pÃ©dagogique numÃ©rique â€“ AnnÃ©e 1
+Ø­ÙØ±ÙÙˆÙÙÙŠ
+HurÃ»fÃ®
+Application web d'apprentissage de l'arabe â€“ 6 Ã  8 ans
+Note de cadrage technique et fonctionnelle
+RÃ©alignement documentaire â€“ Version 2.0
+RÃ©fÃ©rence document
+AFE-HUR-NOTE-001
+Version
+2.0 â€“ Mai 2026
+Statut
+Document de rÃ©fÃ©rence â€“ remplace v1.0
+RÃ©daction
+Youssef Najih
+Validation pÃ©dagogique
+M. El Hassane Kaddouri (Ã  confirmer)
+Diffusion
+Direction pÃ©dagogique AFE, Ã©quipe technique, prestataires
+Note prÃ©liminaire â€“ Pourquoi ce document remplace les prÃ©cÃ©dents
+Cette note remplace et annule trois documents antÃ©rieurs jugÃ©s incohÃ©rents avec l'Ã©tat rÃ©el du projet :
+RESUME_EXECUTIF.md (v1.0, avril 2026)
+SPECIFICATIONS_APP_ARABE.md (v1.0, avril 2026)
+plan_developpement_LearnHub.md (v1.0, 2026)
+L'incohÃ©rence majeure tient Ã  la pile technique dÃ©crite. Les trois documents annoncent une application bÃ¢tie sur Bubble.io (no-code) avec base de donnÃ©es Airtable, pour un coÃ»t d'environ 10 â‚¬ par an. La rÃ©alitÃ© du dÃ©pÃ´t est tout autre : il s'agit d'une application web React 18 avec Vite, Zustand, Tailwind CSS et stockage local navigateur (localStorage), sans backend ni service Bubble. Aucun fichier du dÃ©pÃ´t ne fait rÃ©fÃ©rence Ã  Bubble ou Airtable. Le dÃ©veloppement a donc pivotÃ© Ã  un moment du projet sans que la documentation suive.
+Ce document rÃ©tablit la vÃ©ritÃ© technique, Ã©numÃ¨re sans complaisance les Ã©carts entre les ambitions affichÃ©es et les livrables effectivement prÃ©sents, et fixe le pÃ©rimÃ¨tre rÃ©el du minimum viable pour la rentrÃ©e de septembre 2026.
+1. IdentitÃ© et finalitÃ© du projet
+1.1 DÃ©signation
+Le projet porte deux noms qui apparaissent indiffÃ©remment dans la documentation et le code : HurÃ»fÃ® (Ø­ÙØ±ÙÙˆÙÙÙŠ), qui est le nom arabe utilisÃ© dans l'interface, et LearnHub Kids, qui est le nom commercial provisoire utilisÃ© dans la documentation. La prÃ©sente note retient HurÃ»fÃ® comme nom de rÃ©fÃ©rence. LearnHub Kids reste acceptable en communication externe francophone.
+1.2 FinalitÃ© pÃ©dagogique
+HurÃ»fÃ® est une application web pÃ©dagogique destinÃ©e Ã  des enfants non-arabophones Ã¢gÃ©s de 6 Ã  8 ans, dans le cadre du programme AnnÃ©e 1 de l'Ã©cole d'arabe de l'Association de la FraternitÃ© d'Elne. L'application complÃ¨te l'enseignement en prÃ©sentiel par des exercices ludiques utilisables en classe et Ã  la maison.
+Les compÃ©tences visÃ©es par le minimum viable sont les suivantes :
+reconnaissance auditive et visuelle des douze lettres prioritaires (sans points diacritiques)
+discrimination des six paires phonÃ©miques critiques (Ø­/Ù‡, Ø¹/Ø£, Øµ/Ø³, Ø¶/Ø¯, Ø·/Øª, Ù‚/Ùƒ)
+acquisition d'un lexique de base structurÃ© en douze catÃ©gories thÃ©matiques (environ cent mots au total dans le code, dont une vingtaine constitue le socle prioritaire)
+tracÃ© manuscrit des douze lettres prioritaires
+comprÃ©hension de quatre micro-dialogues de classe
+1.3 Public et contexte d'usage
+Le public initial est restreint : quatre enfants encadrÃ©s par deux enseignantes. L'usage cible est mixte, Ã  parts Ã©gales entre la salle de classe et la rÃ©vision Ã  domicile. Les supports matÃ©riels visÃ©s sont les tablettes (iPad et Android) et les smartphones, sans contrainte de version rÃ©cente. L'application doit fonctionner avec une connexion rÃ©seau intermittente, ce qui implique Ã  terme un fonctionnement hors-ligne.
+2. Pile technique rÃ©elle
+Le tableau ci-dessous documente la pile effectivement prÃ©sente dans le dÃ©pÃ´t, Ã  distinguer de la pile no-code dÃ©crite dans la documentation antÃ©rieure.
+Couche
+Technologie rÃ©elle (dÃ©pÃ´t)
+Ancienne mention (Ã  abandonner)
+Frontend
+React 18, Vite, HashRouter
+Bubble.io
+Styles
+Tailwind CSS 3, PostCSS
+CSS Bubble natif
+Ã‰tat applicatif
+Zustand avec middleware persist
+Airtable (lecture-Ã©criture)
+Persistance
+localStorage navigateur
+Airtable cloud
+Animations
+Framer Motion 11
+non applicable
+GÃ©nÃ©ration PDF
+jsPDF + jsPDF-AutoTable
+non applicable
+IcÃ´nes
+Lucide React
+Bubble icons
+QR Code
+qrcode.react
+non applicable
+Audio (fallback)
+Web Speech API (TTS navigateur)
+non applicable
+Backend
+aucun â€“ application 100 % cÃ´tÃ© client
+Bubble + Airtable
+HÃ©bergement
+Ã  dÃ©finir (statique : Netlify, Vercel, OVHâ€¦)
+URL Bubble
+2.1 ConsÃ©quences du choix React
+Le choix d'une application React purement cliente, sans backend, a des consÃ©quences Ã  assumer et Ã  documenter clairement auprÃ¨s de toute personne reprenant le projet.
+Les donnÃ©es de progression des enfants ne quittent pas le navigateur. Effacer le cache ou changer d'appareil supprime tout l'historique.
+Aucun suivi centralisÃ© n'est possible cÃ´tÃ© enseignantes sans intervention manuelle (export, partage, capture).
+Aucune authentification rÃ©elle. Le systÃ¨me de profils est un choix de nom et d'avatar, sans mot de passe ni isolation entre utilisateurs partageant la mÃªme tablette.
+L'application peut Ãªtre dÃ©ployÃ©e comme simple site statique, ce qui ramÃ¨ne le coÃ»t d'hÃ©bergement Ã  zÃ©ro ou quasi-zÃ©ro (Netlify, Vercel, Cloudflare Pages en plan gratuit conviennent).
+2.2 Versions des dÃ©pendances â€“ point de vigilance
+Le fichier package.json contient des numÃ©ros de version inhabituels qui mÃ©ritent vÃ©rification avant tout npm install dans un environnement neuf. Ã€ titre d'exemples : vite est dÃ©clarÃ© en version 8.x alors que la branche stable publique est en v6 ; lucide-react est dÃ©clarÃ© en 1.14.x alors que la branche actuelle est en 0.46x ; jspdf est dÃ©clarÃ© en 4.x alors que la version stable est 2.x. Soit le package-lock.json verrouille effectivement des versions cohÃ©rentes et le package.json contient des erreurs d'Ã©criture sans consÃ©quence, soit il y a un problÃ¨me rÃ©el Ã  rÃ©soudre. Une rÃ©gÃ©nÃ©ration complÃ¨te des dÃ©pendances dans un environnement Node.js propre est recommandÃ©e comme premiÃ¨re action technique.
+3. PÃ©rimÃ¨tre fonctionnel rÃ©el
+Le pÃ©rimÃ¨tre effectivement implÃ©mentÃ© dÃ©passe le MVP annoncÃ©. La documentation initiale prÃ©voyait cinq exercices ; le code en propose sept, plus un dashboard enseignant et une galerie de badges.
+3.1 Pages applicatives prÃ©sentes
+Page
+Lignes de code
+Niveau de maturitÃ©
+Accueil (sÃ©lection profil)
+342
+MÃ»re â€“ crÃ©ation/sÃ©lection d'enfant fonctionnelle
+Modules (menu principal)
+104
+MÃ»re
+Ã‰coute et reconnaissance
+228
+MÃ»re â€“ dÃ©pend des audios manquants
+Memory des lettres
+162
+MÃ»re
+Distinction des phonÃ¨mes
+214
+Bancale â€“ architecture audio Ã  revoir (cf. section 4)
+TraÃ§age des lettres
+203
+Fonctionnelle â€“ validation pÃ©dagogique faible (cf. section 4)
+Flashcards vocabulaire
+171
+MÃ»re â€“ dÃ©pend des audios manquants
+Conversation (dialogues)
+230
+MÃ»re â€“ ajout par rapport au MVP initial
+Tableau de bord enfant
+120
+MÃ»re
+Galerie de badges
+113
+MÃ»re
+Dashboard enseignante
+1 156
+Sur-dimensionnÃ©e â€“ cf. section 4.5
+3.2 DonnÃ©es pÃ©dagogiques prÃ©sentes dans le code
+Les fichiers data/ contiennent un contenu plus riche que ce qui Ã©tait initialement annoncÃ© :
+alphabet.js : les 28 lettres complÃ¨tes, dont 12 marquÃ©es prioritaires, avec translittÃ©ration, son et chemin audio attendu
+phonemes.js : 6 paires avec type articulatoire et astuce mnÃ©motechnique
+vocabulaire.js : environ 100 mots rÃ©partis en 12 catÃ©gories (couleurs, nombres, salutations, classe, animaux, famille, Ã©motions, corps, nourriture, consignes, vocabulaire religieux, mots-outils)
+conversations.js : 4 dialogues de 2 tours chacun (salutations, prÃ©sentation, Ã©motions, en classe)
+badges.js : 5 badges (reconnaissance, sons, vocabulaire, traÃ§age, assiduitÃ© hebdomadaire)
+Une partie seulement de ce contenu correspond aux ressources rÃ©ellement prÃ©sentes. Les images couvrent les animaux (6), les objets de classe (10), la famille (1 sur 6), et la nourriture (5 sur 8). Les catÃ©gories couleurs, nombres, salutations, Ã©motions, corps, consignes, vocabulaire religieux et mots-outils n'ont aucune illustration. Les fichiers audio sont absents en totalitÃ© (cf. section 4.1).
+4. Ã‰carts critiques entre l'application livrÃ©e et l'application utilisable
+Cinq Ã©carts sont identifiÃ©s. Les deux premiers sont bloquants pour la mise en service prÃ©vue en septembre 2026. Les trois suivants sont Ã  corriger avant une diffusion plus large.
+4.1 Ã‰cart bloquant nÂ° 1 : aucune ressource audio livrÃ©e
+Le code rÃ©fÃ©rence environ cent vingt fichiers audio MP3 : 28 lettres, 6 paires phonÃ©miques, environ 80 mots de vocabulaire, 8 Ã©noncÃ©s de conversation. Le dÃ©pÃ´t ne contient aucun de ces fichiers â€” uniquement deux fichiers .gitkeep marquant les dossiers vides.
+Le fallback prÃ©vu en cas d'absence de fichier est l'API Web Speech du navigateur. Pour la langue arabe, le rÃ©sultat est variable selon le systÃ¨me d'exploitation et le navigateur, la voix est synthÃ©tique, la prononciation peut Ãªtre approximative et le dÃ©bit n'est pas paramÃ©trÃ© pour un enfant dÃ©butant. Ce fallback est acceptable en mode dÃ©gradÃ© pour la dÃ©monstration, il n'est pas acceptable pour l'usage cible auprÃ¨s des enfants en classe.
+Sans audios, l'objectif pÃ©dagogique principal de l'application â€” la reconnaissance auditive â€” ne peut pas Ãªtre atteint. Il s'agit du bloquant numÃ©ro un du projet, Ã  traiter en prioritÃ© avant tout autre dÃ©veloppement.
+4.2 Ã‰cart bloquant nÂ° 2 : exercice Â« Distinction des phonÃ¨mes Â» mal architecturÃ©
+L'exercice demande Ã  l'enfant de discriminer deux sons proches (par exemple Ø­ versus Ù‡). Le code charge un seul fichier audio par paire, nommÃ© phoneme_01_haa_vs_ha.mp3. Trois interprÃ©tations sont possibles, toutes problÃ©matiques :
+le fichier contient les deux sons consÃ©cutivement, ce qui empÃªche un test discriminatif (l'enfant entend les deux, le QCM n'a plus de sens)
+le fichier ne contient qu'un seul son alÃ©atoire, ce qui force une mÃ©morisation par texture sonore et non par discrimination phonÃ©mique
+le fichier n'existe pas et le TTS s'exÃ©cute deux fois sur des caractÃ¨res diffÃ©rents, ce qui donne un rÃ©sultat techniquement incontrÃ´lÃ©
+Le modÃ¨le de donnÃ©es et l'interface doivent Ãªtre revus pour gÃ©rer deux fichiers audio par paire (un par lettre), avec idÃ©alement plusieurs prononciations par lettre afin d'Ã©viter la mÃ©morisation parasite. Cette correction conditionne la valeur pÃ©dagogique de l'un des trois exercices clÃ©s.
+4.3 Ã‰cart critique nÂ° 3 : validation du traÃ§age triviale
+L'exercice de traÃ§age valide la production de l'enfant sur un seul critÃ¨re : la prÃ©sence d'au moins 800 pixels colorÃ©s sur le canvas. Aucune comparaison de forme, aucune vÃ©rification du sens d'Ã©criture (droite vers gauche), aucun contrÃ´le de l'ordre des traits. Un enfant peut donc valider une lettre en gribouillant n'importe oÃ¹ sur la surface.
+Pour une application d'apprentissage de l'arabe, cette validation est un faux signal pÃ©dagogique. Plusieurs niveaux d'amÃ©lioration sont possibles, du plus simple au plus rigoureux : superposition d'un masque alpha de la lettre cible avec calcul de recouvrement, contrÃ´le de la trajectoire par Ã©chantillonnage de points le long d'une courbe de rÃ©fÃ©rence, ou approche par bibliothÃ¨que spÃ©cialisÃ©e (HanziWriter adaptÃ© ou Ã©quivalent). Le premier niveau suffit pour le minimum viable de septembre 2026.
+4.4 Ã‰cart sensible nÂ° 4 : pas de Progressive Web App fonctionnelle
+La documentation et le brief freelance annoncent une Progressive Web App (PWA). En rÃ©alitÃ©, l'application n'est pas une PWA : il manque le fichier manifest.json, il manque le service worker, et aucune mise en cache des ressources n'est configurÃ©e. L'application requiert donc une connexion rÃ©seau permanente, ce qui contredit l'usage cible (classe et maison, connexions intermittentes) et compromet la performance globale, notamment lors du chargement des futurs fichiers audio.
+La transformation en PWA est techniquement lÃ©gÃ¨re : ajout du plugin vite-plugin-pwa, configuration d'un manifest, dÃ©claration d'une stratÃ©gie de cache pour les ressources audio et image. Effort estimÃ© : une demi-journÃ©e.
+4.5 Ã‰cart de proportion nÂ° 5 : Dashboard enseignante sur-dimensionnÃ©
+Le fichier DashboardMaitresse.jsx compte 1 156 lignes, soit environ un tiers du code de pages de l'application. Il intÃ¨gre un systÃ¨me de code PIN, la gÃ©nÃ©ration de diplÃ´mes PDF personnalisÃ©s, l'export de rÃ©sultats, et plusieurs vues analytiques. L'utilitÃ© rÃ©elle de cet ensemble pour deux enseignantes suivant quatre enfants est Ã  interroger.
+Sans remettre en cause la qualitÃ© du travail rÃ©alisÃ©, il est suggÃ©rÃ© pour le minimum viable de septembre 2026 de geler une partie des fonctionnalitÃ©s secondaires (diplÃ´mes PDF, analyses fines) et de ne conserver que la vue de progression simple. Le reste pourra Ãªtre rÃ©activÃ© pour une version 2 sur la base d'un retour rÃ©el des enseignantes aprÃ¨s quelques mois d'usage.
+4.6 Point de vigilance juridique : avatars
+Le dossier app/public/assets/avatars contient douze fichiers PNG nommÃ©s sindbad.png, aladin.png, jasmine.png, lion_boy.png et autres. Si ces illustrations sont inspirÃ©es ou dÃ©rivÃ©es de personnages Disney ou d'autres franchises protÃ©gÃ©es, l'application ne peut pas Ãªtre distribuÃ©e publiquement sans risque juridique sÃ©rieux. Une vÃ©rification visuelle et, si nÃ©cessaire, un remplacement par des avatars originaux ou des illustrations sous licence libre (par exemple OpenMoji, Twemoji) sont Ã  conduire avant tout dÃ©ploiement au-delÃ  du cercle restreint des quatre enfants pilotes.
+5. Plan d'action recalÃ© sur la rÃ©alitÃ©
+Le plan suivant remplace les plannings antÃ©rieurs (semaine 1 / semaine 2 / semaine 3 du document de spÃ©cifications, et phases 1 Ã  5 du plan de dÃ©veloppement LearnHub). Il prend pour acquis que la majeure partie du code applicatif est dÃ©jÃ  Ã©crite.
+5.1 Phase A â€“ Stabilisation technique (1 semaine)
+RÃ©gÃ©nÃ©ration de l'environnement Node.js et correction des versions de dÃ©pendances dÃ©clarÃ©es
+VÃ©rification de la construction Vite et du dÃ©ploiement statique cible
+VÃ©rification de la nature des avatars (originalitÃ© juridique)
+Mise en place de la PWA (manifest, service worker, cache des ressources)
+5.2 Phase B â€“ Production des ressources audio (2 Ã  3 semaines)
+Deux scÃ©narios Ã  arbitrer en dÃ©but de phase :
+ScÃ©nario humain : enregistrement par un locuteur arabe Fusha (idÃ©alement une voix fÃ©minine adulte, articulation lente, ton chaleureux) en home-studio ou cabine. CoÃ»t marchÃ© indicatif : entre 400 et 1 200 â‚¬ pour 120 prises courtes. DÃ©lai : 1 Ã  2 semaines selon disponibilitÃ© du prestataire.
+ScÃ©nario synthÃ¨se vocale premium : gÃ©nÃ©ration via Azure Neural TTS (voix Salma ou Zariyah, Fusha), ElevenLabs ou Google Cloud TTS. CoÃ»t : quelques euros Ã  quelques dizaines d'euros. DÃ©lai : une journÃ©e de script. QualitÃ© acceptable pour la rentrÃ©e 2026, Ã  remplacer par des prises humaines en version 2.
+Le scÃ©nario synthÃ¨se vocale est recommandÃ© pour tenir l'Ã©chÃ©ance de septembre 2026. Le scÃ©nario humain peut Ãªtre dÃ©clenchÃ© en parallÃ¨le pour une bascule en version 2 entre janvier et mars 2027.
+5.3 Phase C â€“ Corrections fonctionnelles bloquantes (1 semaine)
+Refonte de l'exercice Distinction des phonÃ¨mes (modÃ¨le de donnÃ©es Ã  deux fichiers par paire, interface dÃ©diÃ©e)
+AmÃ©lioration de la validation du traÃ§age (comparaison de masque, premier niveau)
+Tests d'usage en conditions rÃ©elles sur tablette avec un ou deux enfants pilotes
+5.4 Phase D â€“ RÃ©duction du dashboard et nettoyage (3 Ã  5 jours)
+Gel temporaire des fonctionnalitÃ©s secondaires du dashboard (diplÃ´mes, analyses)
+VÃ©rification des illustrations manquantes (couleurs, salutations, Ã©motions, etc.) â€“ fournies ou explicitement non prÃ©vues pour la version 1
+Documentation utilisateur courte pour les deux enseignantes
+5.5 Phase E â€“ Mise en service et accompagnement (rentrÃ©e 2026)
+DÃ©ploiement sur hÃ©bergement statique (Ã  choisir : Netlify, Vercel, Cloudflare Pages, OVH)
+Installation sur les tablettes des quatre enfants (mode PWA)
+Formation d'une heure des deux enseignantes
+DÃ©finition d'un cycle de retour (mensuel sur le premier trimestre)
+5.6 Estimation budgÃ©taire rÃ©visÃ©e
+Poste
+MVP septembre 2026
+V2 horizon mars 2027
+HÃ©bergement statique
+0 â‚¬ (plan gratuit)
+0 â‚¬ Ã  20 â‚¬/an
+Nom de domaine (optionnel)
+10 Ã  15 â‚¬/an
+10 Ã  15 â‚¬/an
+Audio â€“ synthÃ¨se vocale premium
+10 Ã  40 â‚¬ (gÃ©nÃ©ration unique)
+â€”
+Audio â€“ enregistrement humain
+â€”
+400 Ã  1 200 â‚¬
+Illustrations complÃ©mentaires
+0 â‚¬ (existant) ou 200 Ã  600 â‚¬ (complÃ©ments)
+500 Ã  1 500 â‚¬ (refonte cohÃ©rente)
+Total fourchette basse
+â‰ˆ 20 â‚¬
+â‰ˆ 920 â‚¬
+Total fourchette haute
+â‰ˆ 655 â‚¬
+â‰ˆ 2 720 â‚¬
+Les anciens documents annonÃ§aient 10 â‚¬/an. Cette valeur est tenable pour la seule infrastructure d'hÃ©bergement, mais elle ignore le coÃ»t rÃ©el des contenus pÃ©dagogiques (audio et illustrations) qui constituent l'essentiel de la valeur perÃ§ue de l'application.
+6. DÃ©cisions structurantes Ã  arbitrer
+Quatre dÃ©cisions conditionnent la suite du projet et doivent Ãªtre tranchÃ©es avant l'engagement de la phase B.
+NÂ°
+DÃ©cision
+Enjeu et consÃ©quence
+D1
+Voix humaine ou synthÃ¨se vocale pour le MVP
+Conditionne le dÃ©lai (1 jour vs 1 Ã  2 semaines) et le coÃ»t (quelques dizaines vs plusieurs centaines d'euros). Recommandation : TTS premium pour septembre 2026, voix humaine pour V2.
+D2
+PÃ©rimÃ¨tre du dashboard enseignante
+Maintien complet (1 156 lignes) ou version rÃ©duite. Recommandation : version rÃ©duite pour le MVP, rÃ©Ã©valuation aprÃ¨s trois mois d'usage.
+D3
+Statut juridique des avatars
+Si dÃ©rivÃ©s de franchises protÃ©gÃ©es, ils empÃªchent toute diffusion publique. Recommandation : audit visuel immÃ©diat, remplacement si doute.
+D4
+HÃ©bergement cible
+Choix du fournisseur (Netlify, Vercel, Cloudflare Pages, OVH, autohÃ©bergÃ©). Conditionne la configuration de dÃ©ploiement et le domaine. Recommandation : Cloudflare Pages pour son plan gratuit gÃ©nÃ©reux et son CDN mondial.
+7. MÃ©triques de succÃ¨s rÃ©visÃ©es
+Les mÃ©triques annoncÃ©es dans le rÃ©sumÃ© exÃ©cutif initial (note de satisfaction supÃ©rieure Ã  7/10, score moyen supÃ©rieur Ã  70 %, trois sessions hebdomadaires) restent pertinentes mais ne sont pas mesurables sans backend ni tÃ©lÃ©mÃ©trie distante. La prÃ©sente note les complÃ¨te et les rend opÃ©rationnelles.
+7.1 MÃ©triques mesurables par l'application elle-mÃªme
+nombre de sessions par enfant par semaine (lecture du localStorage par les enseignantes)
+durÃ©e moyenne par session
+taux de rÃ©ussite par exercice
+badges dÃ©bloquÃ©s
+7.2 MÃ©triques Ã  collecter manuellement
+retour qualitatif des deux enseignantes aprÃ¨s un mois, trois mois, six mois
+retour qualitatif des parents (questionnaire court)
+observation en classe de la progression effective des enfants sur les douze lettres prioritaires
+7.3 CritÃ¨res de rÃ©ussite du MVP septembre 2026
+les quatre enfants disposent de l'application sur tablette dÃ¨s la rentrÃ©e
+au moins 100 fichiers audio sur 120 sont prÃ©sents et fonctionnels
+aucun Ã©cran ne renvoie d'erreur bloquante
+les deux enseignantes ont reÃ§u et signÃ© une notice d'utilisation courte
+un cycle de retour mensuel est instaurÃ©
+Annexe â€“ Documents antÃ©rieurs annulÃ©s ou refondus
+La prÃ©sente note remplace ou refond les documents suivants :
+Document antÃ©rieur
+Statut
+Ã‰lÃ©ment rÃ©cupÃ©rÃ©
+RESUME_EXECUTIF.md (v1.0)
+AnnulÃ©
+Objectifs pÃ©dagogiques et public cible (sections 1.2 et 1.3 ci-dessus)
+SPECIFICATIONS_APP_ARABE.md (v1.0)
+AnnulÃ©
+Liste des 12 lettres prioritaires et des 6 paires phonÃ©miques (intÃ©grÃ©es dans le code data/)
+plan_developpement_LearnHub.md (v1.0)
+Hors pÃ©rimÃ¨tre
+Ce document dÃ©crit en rÃ©alitÃ© une plateforme LMS gÃ©nÃ©rique (cours vidÃ©o, formateurs, apprenants) sans rapport direct avec HurÃ»fÃ®. Ã€ archiver dans un dossier sÃ©parÃ©.
+GUIDE_RESSOURCES_AUDIO_IMAGES.md
+Ã€ refondre
+Sert de base Ã  un cahier des charges freelance corrigÃ© (document distinct Ã  produire en suivant : AFE-HUR-CDC-001).
+PLAN_ACTION_3_SEMAINES.md
+RemplacÃ©
+RemplacÃ© par la section 5 ci-dessus.
+CHECKLIST_DEMARRAGE.md
+RemplacÃ©
+RemplacÃ© par les phases A Ã  E de la section 5.
+LISTE_MEDIA_PREPARATION.md
+Ã€ refondre
+Inventaire Ã  rÃ©gÃ©nÃ©rer Ã  partir des donnÃ©es rÃ©elles du code (script de check Ã  utiliser).
+INDEX.md
+RemplacÃ©
+Le prÃ©sent document fait office d'index unique.
+â€” Fin du document â€”
