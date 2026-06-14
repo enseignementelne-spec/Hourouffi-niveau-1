@@ -9,6 +9,14 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react'
 import { playTap, playPoints } from '../utils/soundEffects'
 import { AuditingMetrics } from '../utils/auditingMetrics'
 
+// Resolve image/asset paths with Vite BASE_URL so they work on GitHub Pages
+const BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '')
+function resolveAsset(path) {
+  if (!path) return path
+  if (path.startsWith('http') || path.startsWith('blob:')) return path
+  return `${BASE}${path.startsWith('/') ? path : `/${path}`}`
+}
+
 export default function FlashcardsVocabulaire() {
   const activeProfile = useProfileStore(s => s.getActiveProfile())
   const addPoints = useProfileStore(s => s.addPoints)
@@ -59,7 +67,7 @@ export default function FlashcardsVocabulaire() {
 
   const mots = selectedCat.mots
   const mot = mots[cardIndex]
-  const fallbackImage = '/resources/images/placeholder-word.svg'
+  const fallbackImage = resolveAsset('/resources/images/placeholder-word.svg')
 
   const goTo = (dir) => {
     setDirection(dir)
@@ -117,7 +125,7 @@ export default function FlashcardsVocabulaire() {
         >
           {mot.image ? (
             <img
-              src={mot.image}
+              src={resolveAsset(mot.image)}
               alt={mot.ar}
               className="w-full max-w-xs h-44 object-cover rounded-2xl border border-slate-100 dark:border-slate-700 mb-6"
               onError={(e) => {

@@ -93,45 +93,93 @@ export default function TracageLettres() {
     tracePointsRef.current = []
   }
 
-  // Draw waypoint guides on canvas
-  const drawGuides = useCallback(() => {
+  // Draw waypoint guides: circles + arrows between them + start marker
+  const drawGuides = useCallback((overrideResult) => {
     if (!showGuides || !canvasRef.current) return
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     const config = letterWaypoints[letter.id]
     if (!config) return
 
-    config.zones.forEach((zone, i) => {
-      const hit = validationResult?.zones?.[i]?.hit
-      ctx.save()
-      ctx.globalAlpha = 0.2
-      ctx.fillStyle = hit ? '#10b981' : '#3b82f6'
-      ctx.strokeStyle = hit ? '#10b981' : '#93c5fd'
-      ctx.lineWidth = 2
-      ctx.setLineDash([6, 4])
+    const result = overrideResult ?? validationResult
+    const centers = config.zones.map(z => ({ x: z.x + z.w / 2, y: z.y + z.h / 2 }))
 
-      // Draw rounded rectangle
-      const r = 8
+    // Zone colour palette: start=green, middle=blue, end=orange/red
+    const palette = ['#22c55e', '#3b82f6', '#f97316', '#a855f7']
+
+    // 1. Draw dashed guide lines between zone centers
+    ctx.save()
+    ctx.setLineDash([8, 5])
+    ctx.lineWidth = 2.5
+    ctx.globalAlpha = 0.35
+    for (let i = 0; i < centers.length - 1; i++) {
+      const from = centers[i]
+      const to   = centers[i + 1]
+      ctx.strokeStyle = palette[i] || '#3b82f6'
       ctx.beginPath()
-      ctx.moveTo(zone.x + r, zone.y)
-      ctx.lineTo(zone.x + zone.w - r, zone.y)
-      ctx.quadraticCurveTo(zone.x + zone.w, zone.y, zone.x + zone.w, zone.y + r)
-      ctx.lineTo(zone.x + zone.w, zone.y + zone.h - r)
-      ctx.quadraticCurveTo(zone.x + zone.w, zone.y + zone.h, zone.x + zone.w - r, zone.y + zone.h)
-      ctx.lineTo(zone.x + r, zone.y + zone.h)
-      ctx.quadraticCurveTo(zone.x, zone.y + zone.h, zone.x, zone.y + zone.h - r)
-      ctx.lineTo(zone.x, zone.y + r)
-      ctx.quadraticCurveTo(zone.x, zone.y, zone.x + r, zone.y)
+      ctx.moveTo(from.x, from.y)
+      ctx.lineTo(to.x, to.y)
+      ctx.stroke()
+
+      // Arrowhead at midpoint towards next zone
+      const mx = (from.x + to.x) / 2
+      const my = (from.y + to.y) / 2
+      const angle = Math.atan2(to.y - from.y, to.x - from.x)
+      ctx.save()
+      ctx.translate(mx, my)
+      ctx.rotate(angle)
+      ctx.globalAlpha = 0.55
+      ctx.fillStyle = palette[i] || '#3b82f6'
+      ctx.beginPath()
+      ctx.moveTo(8, 0)
+      ctx.lineTo(-6, -5)
+      ctx.lineTo(-6, 5)
       ctx.closePath()
       ctx.fill()
+      ctx.restore()
+    }
+    ctx.restore()
+
+    // 2. Draw zone circles with hit/miss state
+    config.zones.forEach((zone, i) => {
+      const hit  = result?.zones?.[i]?.hit
+      const isFirst = zone.order === 1
+      const cx = centers[i].x
+      const cy = centers[i].y
+      const radius = Math.min(zone.w, zone.h) / 2
+
+      ctx.save()
+      // Circle fill
+      ctx.globalAlpha = hit ? 0.55 : 0.22
+      ctx.fillStyle = hit ? '#10b981' : (palette[i] || '#3b82f6')
+      ctx.beginPath()
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Circle border
+      ctx.globalAlpha = hit ? 0.85 : 0.55
+      ctx.strokeStyle = hit ? '#10b981' : (palette[i] || '#3b82f6')
+      ctx.lineWidth = isFirst ? 3.5 : 2
+      ctx.setLineDash([])
+      ctx.beginPath()
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2)
       ctx.stroke()
 
       // Zone number
-      ctx.globalAlpha = 0.5
-      ctx.fillStyle = hit ? '#10b981' : '#3b82f6'
-      ctx.font = 'bold 14px Inter, sans-serif'
+      ctx.globalAlpha = 0.9
+      ctx.fillStyle = hit ? '#065f46' : '#1e3a5f'
+      ctx.font = `bold ${isFirst ? 20 : 16}px Inter, sans-serif`
       ctx.textAlign = 'center'
-      ctx.fillText(zone.order, zone.x + zone.w / 2, zone.y + zone.h / 2 + 5)
+      ctx.textBaseline = 'middle'
+      ctx.fillText(zone.order, cx, cy)
+
+      // "ابدأ" label on zone 1
+      if (isFirst && !result) {
+        ctx.globalAlpha = 0.85
+        ctx.fillStyle = '#16a34a'
+        ctx.font = 'bold 13px Arial, sans-serif'
+        ctx.fillText('ابدأ', cx, cy - radius - 10)
+      }
       ctx.restore()
     })
   }, [letter.id, showGuides, validationResult])
@@ -145,33 +193,8 @@ export default function TracageLettres() {
   const validate = () => {
     const result = validateTrace(letter.id, tracePointsRef.current)
     setValidationResult(result)
-
-    // Redraw guides with hit state
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
-    // Re-draw the guides to show hit/miss
-    if (showGuides && letterWaypoints[letter.id]) {
-      letterWaypoints[letter.id].zones.forEach((zone, i) => {
-        const hit = result.zones[i]?.hit
-        ctx.save()
-        ctx.globalAlpha = 0.4
-        ctx.fillStyle = hit ? '#10b981' : '#ef4444'
-        const r = 8
-        ctx.beginPath()
-        ctx.moveTo(zone.x + r, zone.y)
-        ctx.lineTo(zone.x + zone.w - r, zone.y)
-        ctx.quadraticCurveTo(zone.x + zone.w, zone.y, zone.x + zone.w, zone.y + r)
-        ctx.lineTo(zone.x + zone.w, zone.y + zone.h - r)
-        ctx.quadraticCurveTo(zone.x + zone.w, zone.y + zone.h, zone.x + zone.w - r, zone.y + zone.h)
-        ctx.lineTo(zone.x + r, zone.y + zone.h)
-        ctx.quadraticCurveTo(zone.x, zone.y + zone.h, zone.x, zone.y + zone.h - r)
-        ctx.lineTo(zone.x, zone.y + r)
-        ctx.quadraticCurveTo(zone.x, zone.y, zone.x + r, zone.y)
-        ctx.closePath()
-        ctx.fill()
-        ctx.restore()
-      })
-    }
+    // Redraw guides overlay with hit/miss colours using the updated drawGuides
+    drawGuides(result)
 
     if (result.valid) {
       setValidated(true)
@@ -239,6 +262,11 @@ export default function TracageLettres() {
       <div className="text-center mb-4">
         <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-1">تتبّع الحرف!</h2>
         <p className="font-arabic text-lg text-brand-600" dir="rtl">اُكْتُبْ الحَرْف!</p>
+        <p className="text-xs text-slate-400 font-bold mt-1 flex items-center justify-center gap-1">
+          <span>🟢 ابدأ من النقطة الخضراء</span>
+          <span className="text-slate-300">·</span>
+          <span>Commence par le cercle vert ①</span>
+        </p>
       </div>
 
       {/* Guide toggle */}

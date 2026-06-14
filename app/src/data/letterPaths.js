@@ -13,7 +13,7 @@ export const letterWaypoints = {
       { x: 170, y: 180, w: 60, h: 65, order: 2, label: 'وسط'   },
       { x: 170, y: 265, w: 60, h: 65, order: 3, label: 'أسفل'  },
     ],
-    minZonesRequired: 3,
+    minZonesRequired: 2,
   },
 
   // ح (Haa) — Courbe ouverte : commence en haut à droite, descend, remonte à gauche
@@ -23,7 +23,7 @@ export const letterWaypoints = {
       { x: 155, y: 235, w: 75, h: 65, order: 2, label: 'قعر'        },
       { x: 60,  y: 145, w: 75, h: 65, order: 3, label: 'خروج يسار' },
     ],
-    minZonesRequired: 3,
+    minZonesRequired: 2,
   },
 
   // د (Daal) — Petit arc : haut-droite → bas → sortie gauche horizontale
@@ -33,7 +33,7 @@ export const letterWaypoints = {
       { x: 185, y: 220, w: 70, h: 65, order: 2, label: 'انحناء'      },
       { x: 105, y: 165, w: 70, h: 65, order: 3, label: 'خروج يسار'  },
     ],
-    minZonesRequired: 3,
+    minZonesRequired: 2,
   },
 
   // ر (Raa) — Crochet vers le bas : commence en haut, descend à droite
@@ -43,7 +43,7 @@ export const letterWaypoints = {
       { x: 205, y: 210, w: 70, h: 65, order: 2, label: 'انحدار'   },
       { x: 155, y: 305, w: 70, h: 60, order: 3, label: 'نهاية'    },
     ],
-    minZonesRequired: 3,
+    minZonesRequired: 2,
   },
 
   // س (Siin) — Trois dents de droite à gauche puis descente
@@ -54,7 +54,7 @@ export const letterWaypoints = {
       { x: 115, y: 180, w: 70, h: 65, order: 3, label: 'سنّ ٣'   },
       { x: 45,  y: 245, w: 70, h: 60, order: 4, label: 'ذيل'      },
     ],
-    minZonesRequired: 3,
+    minZonesRequired: 2,
   },
 
   // ص (Saad) — Boucle arrondie + queue vers la gauche
@@ -64,7 +64,7 @@ export const letterWaypoints = {
       { x: 200, y: 240, w: 75, h: 65, order: 2, label: 'قعر الحلقة'},
       { x: 90,  y: 180, w: 75, h: 65, order: 3, label: 'خروج يسار' },
     ],
-    minZonesRequired: 3,
+    minZonesRequired: 2,
   },
 
   // ط (Taa) — Coupe ouverte + trait vertical à droite
@@ -74,7 +74,7 @@ export const letterWaypoints = {
       { x: 225, y: 190, w: 70, h: 65, order: 2, label: 'يمين الكوب' },
       { x: 110, y: 230, w: 70, h: 65, order: 3, label: 'قعر الكوب'  },
     ],
-    minZonesRequired: 3,
+    minZonesRequired: 2,
   },
 
   // ع (Ayn) — Tête ouverte en haut puis descente en S
@@ -84,7 +84,7 @@ export const letterWaypoints = {
       { x: 175, y: 195, w: 70, h: 65, order: 2, label: 'خصر'        },
       { x: 135, y: 290, w: 75, h: 65, order: 3, label: 'ذيل'         },
     ],
-    minZonesRequired: 3,
+    minZonesRequired: 2,
   },
 
   // ل (Laam) — Trait vertical puis crochet vers la gauche en bas
@@ -94,7 +94,7 @@ export const letterWaypoints = {
       { x: 180, y: 185, w: 60, h: 65, order: 2, label: 'وسط'    },
       { x: 115, y: 295, w: 75, h: 60, order: 3, label: 'انعطاف' },
     ],
-    minZonesRequired: 3,
+    minZonesRequired: 2,
   },
 
   // م (Miim) — Boucle puis queue descendante
@@ -104,7 +104,7 @@ export const letterWaypoints = {
       { x: 195, y: 250, w: 70, h: 65, order: 2, label: 'قاع الحلقة'},
       { x: 135, y: 315, w: 70, h: 60, order: 3, label: 'ذيل'        },
     ],
-    minZonesRequired: 3,
+    minZonesRequired: 2,
   },
 
   // و (Waaw) — Petit cercle puis queue descendante
@@ -114,7 +114,7 @@ export const letterWaypoints = {
       { x: 235, y: 205, w: 70, h: 65, order: 2, label: 'يمين الدائرة' },
       { x: 180, y: 300, w: 70, h: 60, order: 3, label: 'ذيل'           },
     ],
-    minZonesRequired: 3,
+    minZonesRequired: 2,
   },
 
   // ه (Haa) — Boucle ovale fermée
@@ -124,7 +124,7 @@ export const letterWaypoints = {
       { x: 175, y: 255, w: 75, h: 60, order: 2, label: 'أسفل'  },
       { x: 100, y: 150, w: 70, h: 65, order: 3, label: 'يسار'  },
     ],
-    minZonesRequired: 3,
+    minZonesRequired: 2,
   },
 }
 

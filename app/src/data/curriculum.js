@@ -13,7 +13,7 @@ export const CURRICULUM_LEVELS = [
     nameAr: 'المُسْتَوَى الأَوَّل',
     descAr: 'أربع حروف أساسية',
     letterIds: [1, 2, 3, 4],      // ا ح د ر
-    phonemeIds: [1],               // ح vs ه
+    phonemeIds: [1, 7],            // ح vs ه  •  ب vs ت
     conversationIds: [1, 5],       // Salutations + Couleurs (trimestre 1)
     requiredMastery: 0.7,
     memoryPairs: 4,
@@ -26,7 +26,7 @@ export const CURRICULUM_LEVELS = [
     nameAr: 'المُسْتَوَى الثَّانِي',
     descAr: 'أربع حروف إضافية',
     letterIds: [5, 6, 7, 8],      // س ص ط ع
-    phonemeIds: [2, 3],            // ع vs ا, ص vs س
+    phonemeIds: [2, 3, 8, 9],      // ع vs أ  •  ص vs س  •  ن vs م  •  ر vs ز
     conversationIds: [2, 6],       // Présentation + Famille (trimestre 2)
     requiredMastery: 0.7,
     memoryPairs: 4,
@@ -39,7 +39,7 @@ export const CURRICULUM_LEVELS = [
     nameAr: 'المُسْتَوَى الثَّالِث',
     descAr: 'الحروف الأخيرة بلا نقاط',
     letterIds: [9, 10, 11, 12],    // ل م و ه
-    phonemeIds: [4, 5],            // ض vs د, ط vs ت
+    phonemeIds: [4, 5, 10],        // ض vs د  •  ط vs ت  •  غ vs خ
     conversationIds: [3, 7],       // Émotions + Chiffres
     requiredMastery: 0.7,
     memoryPairs: 6,
@@ -52,7 +52,7 @@ export const CURRICULUM_LEVELS = [
     nameAr: 'المُسْتَوَى الرَّابِع',
     descAr: 'كل الحروف العربية',
     letterIds: [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28],
-    phonemeIds: [6],               // ق vs ك
+    phonemeIds: [6, 11, 12],       // ق vs ك  •  ث vs ت  •  ذ vs د
     conversationIds: [4, 8],       // Dans la classe + Animaux (trimestre 3)
     requiredMastery: 0.7,
     memoryPairs: 6,
