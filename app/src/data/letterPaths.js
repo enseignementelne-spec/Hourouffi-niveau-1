@@ -1,116 +1,128 @@
 /**
  * Waypoints de traçage pour les 12 lettres prioritaires
- * Chaque lettre a 3-4 zones rectangulaires que le tracé doit traverser
- * Coordonnées sur un canvas 400×400
+ * Coordonnées sur canvas 400×400 ; lettre ghost à 12rem centrée (~y:90-300)
+ * Zones élargies (65-75px) pour mieux guider les enfants
+ * Ordre de tracé conforme à la calligraphie arabe standard
  */
 
 export const letterWaypoints = {
-  // ا (Alif) — Trait vertical de haut en bas
+  // ا (Alif) — Un seul trait vertical de haut en bas
   1: {
     zones: [
-      { x: 175, y: 40, w: 50, h: 50, order: 1, label: 'أعلى' },
-      { x: 175, y: 170, w: 50, h: 50, order: 2, label: 'وسط' },
-      { x: 175, y: 300, w: 50, h: 50, order: 3, label: 'أسفل' },
+      { x: 170, y: 90,  w: 60, h: 65, order: 1, label: 'أعلى'  },
+      { x: 170, y: 180, w: 60, h: 65, order: 2, label: 'وسط'   },
+      { x: 170, y: 265, w: 60, h: 65, order: 3, label: 'أسفل'  },
     ],
     minZonesRequired: 3,
   },
-  // ح (Haa) — Courbe ouverte de droite vers gauche
+
+  // ح (Haa) — Courbe ouverte : commence en haut à droite, descend, remonte à gauche
   2: {
     zones: [
-      { x: 290, y: 140, w: 55, h: 50, order: 1, label: 'بداية' },
-      { x: 190, y: 270, w: 55, h: 50, order: 2, label: 'قعر' },
-      { x: 90, y: 190, w: 55, h: 50, order: 3, label: 'صعود' },
+      { x: 255, y: 110, w: 75, h: 65, order: 1, label: 'بداية يمين' },
+      { x: 155, y: 235, w: 75, h: 65, order: 2, label: 'قعر'        },
+      { x: 60,  y: 145, w: 75, h: 65, order: 3, label: 'خروج يسار' },
     ],
     minZonesRequired: 3,
   },
-  // د (Daal) — Petit arc de droite
+
+  // د (Daal) — Petit arc : haut-droite → bas → sortie gauche horizontale
   3: {
     zones: [
-      { x: 270, y: 150, w: 55, h: 50, order: 1, label: 'بداية' },
-      { x: 190, y: 250, w: 55, h: 50, order: 2, label: 'انحناء' },
-      { x: 110, y: 170, w: 55, h: 50, order: 3, label: 'نهاية' },
+      { x: 240, y: 110, w: 70, h: 65, order: 1, label: 'أعلى يمين'  },
+      { x: 185, y: 220, w: 70, h: 65, order: 2, label: 'انحناء'      },
+      { x: 105, y: 165, w: 70, h: 65, order: 3, label: 'خروج يسار'  },
     ],
     minZonesRequired: 3,
   },
-  // ر (Raa) — Petit crochet descendant
+
+  // ر (Raa) — Crochet vers le bas : commence en haut, descend à droite
   4: {
     zones: [
-      { x: 210, y: 140, w: 55, h: 50, order: 1, label: 'بداية' },
-      { x: 190, y: 230, w: 55, h: 50, order: 2, label: 'انحدار' },
-      { x: 150, y: 310, w: 55, h: 50, order: 3, label: 'نهاية' },
+      { x: 185, y: 115, w: 70, h: 65, order: 1, label: 'بداية'    },
+      { x: 205, y: 210, w: 70, h: 65, order: 2, label: 'انحدار'   },
+      { x: 155, y: 305, w: 70, h: 60, order: 3, label: 'نهاية'    },
     ],
     minZonesRequired: 3,
   },
-  // س (Siin) — Vagues avec 3 dents
+
+  // س (Siin) — Trois dents de droite à gauche puis descente
   5: {
     zones: [
-      { x: 290, y: 210, w: 50, h: 50, order: 1, label: 'بداية' },
-      { x: 220, y: 170, w: 50, h: 50, order: 2, label: 'سنّ' },
-      { x: 150, y: 210, w: 50, h: 50, order: 3, label: 'سنّ ٢' },
-      { x: 70, y: 250, w: 55, h: 50, order: 4, label: 'نهاية' },
+      { x: 275, y: 175, w: 70, h: 65, order: 1, label: 'سنّ ١'   },
+      { x: 195, y: 150, w: 70, h: 65, order: 2, label: 'سنّ ٢'   },
+      { x: 115, y: 180, w: 70, h: 65, order: 3, label: 'سنّ ٣'   },
+      { x: 45,  y: 245, w: 70, h: 60, order: 4, label: 'ذيل'      },
     ],
     minZonesRequired: 3,
   },
-  // ص (Saad) — Forme arrondie avec queue
+
+  // ص (Saad) — Boucle arrondie + queue vers la gauche
   6: {
     zones: [
-      { x: 270, y: 170, w: 55, h: 50, order: 1, label: 'بداية' },
-      { x: 210, y: 260, w: 55, h: 50, order: 2, label: 'حلقة' },
-      { x: 100, y: 200, w: 55, h: 50, order: 3, label: 'ذيل' },
+      { x: 260, y: 135, w: 75, h: 65, order: 1, label: 'دخول يمين' },
+      { x: 200, y: 240, w: 75, h: 65, order: 2, label: 'قعر الحلقة'},
+      { x: 90,  y: 180, w: 75, h: 65, order: 3, label: 'خروج يسار' },
     ],
     minZonesRequired: 3,
   },
-  // ط (Taa) — Boucle avec trait vertical
+
+  // ط (Taa) — Coupe ouverte + trait vertical à droite
   7: {
     zones: [
-      { x: 190, y: 70, w: 55, h: 50, order: 1, label: 'عمود' },
-      { x: 240, y: 210, w: 55, h: 50, order: 2, label: 'حلقة' },
-      { x: 150, y: 280, w: 55, h: 50, order: 3, label: 'قعر' },
+      { x: 230, y: 80,  w: 65, h: 70, order: 1, label: 'عمود عمودي' },
+      { x: 225, y: 190, w: 70, h: 65, order: 2, label: 'يمين الكوب' },
+      { x: 110, y: 230, w: 70, h: 65, order: 3, label: 'قعر الكوب'  },
     ],
     minZonesRequired: 3,
   },
-  // ع (Ayn) — Courbe en S complexe
+
+  // ع (Ayn) — Tête ouverte en haut puis descente en S
   8: {
     zones: [
-      { x: 250, y: 110, w: 55, h: 50, order: 1, label: 'رأس' },
-      { x: 190, y: 200, w: 55, h: 50, order: 2, label: 'وسط' },
-      { x: 150, y: 300, w: 55, h: 50, order: 3, label: 'ذيل' },
+      { x: 240, y: 95,  w: 70, h: 65, order: 1, label: 'رأس مفتوح' },
+      { x: 175, y: 195, w: 70, h: 65, order: 2, label: 'خصر'        },
+      { x: 135, y: 290, w: 75, h: 65, order: 3, label: 'ذيل'         },
     ],
     minZonesRequired: 3,
   },
-  // ل (Laam) — Vertical avec crochet gauche
+
+  // ل (Laam) — Trait vertical puis crochet vers la gauche en bas
   9: {
     zones: [
-      { x: 190, y: 50, w: 50, h: 50, order: 1, label: 'أعلى' },
-      { x: 190, y: 190, w: 50, h: 50, order: 2, label: 'وسط' },
-      { x: 140, y: 300, w: 55, h: 50, order: 3, label: 'انعطاف' },
+      { x: 180, y: 75,  w: 60, h: 65, order: 1, label: 'أعلى'   },
+      { x: 180, y: 185, w: 60, h: 65, order: 2, label: 'وسط'    },
+      { x: 115, y: 295, w: 75, h: 60, order: 3, label: 'انعطاف' },
     ],
     minZonesRequired: 3,
   },
-  // م (Miim) — Boucle puis queue
+
+  // م (Miim) — Boucle puis queue descendante
   10: {
     zones: [
-      { x: 250, y: 170, w: 55, h: 50, order: 1, label: 'بداية' },
-      { x: 210, y: 260, w: 55, h: 50, order: 2, label: 'حلقة' },
-      { x: 150, y: 320, w: 55, h: 50, order: 3, label: 'ذيل' },
+      { x: 250, y: 150, w: 70, h: 65, order: 1, label: 'دخول يمين' },
+      { x: 195, y: 250, w: 70, h: 65, order: 2, label: 'قاع الحلقة'},
+      { x: 135, y: 315, w: 70, h: 60, order: 3, label: 'ذيل'        },
     ],
     minZonesRequired: 3,
   },
-  // و (Waaw) — Petit cercle avec queue
+
+  // و (Waaw) — Petit cercle puis queue descendante
   11: {
     zones: [
-      { x: 210, y: 130, w: 55, h: 50, order: 1, label: 'رأس' },
-      { x: 230, y: 220, w: 55, h: 50, order: 2, label: 'حلقة' },
-      { x: 190, y: 310, w: 55, h: 50, order: 3, label: 'ذيل' },
+      { x: 205, y: 110, w: 70, h: 65, order: 1, label: 'أعلى الدائرة'  },
+      { x: 235, y: 205, w: 70, h: 65, order: 2, label: 'يمين الدائرة' },
+      { x: 180, y: 300, w: 70, h: 60, order: 3, label: 'ذيل'           },
     ],
     minZonesRequired: 3,
   },
-  // ه (Ha) — Forme ovale/circulaire
+
+  // ه (Haa) — Boucle ovale fermée
   12: {
     zones: [
-      { x: 245, y: 170, w: 55, h: 50, order: 1, label: 'يمين' },
-      { x: 190, y: 270, w: 55, h: 50, order: 2, label: 'أسفل' },
-      { x: 120, y: 170, w: 55, h: 50, order: 3, label: 'يسار' },
+      { x: 240, y: 150, w: 70, h: 65, order: 1, label: 'يمين'  },
+      { x: 175, y: 255, w: 75, h: 60, order: 2, label: 'أسفل'  },
+      { x: 100, y: 150, w: 70, h: 65, order: 3, label: 'يسار'  },
     ],
     minZonesRequired: 3,
   },

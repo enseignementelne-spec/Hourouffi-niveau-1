@@ -1,10 +1,21 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Volume2, Loader2 } from 'lucide-react'
-import { useRobustAudio } from '../../services/audioService'
+import { useRobustAudio, normalizeAudioPath } from '../../services/audioService'
 import { useAppStore } from '../../store/useAppStore'
 
 export default function AudioButton({ audioPath, speakText = '', size = 'md', label, className = '' }) {
-  const { status, play, stop } = useRobustAudio(audioPath, speakText)
+  // Apply BASE_URL prefix so audio works on GitHub Pages subdirectory deployments
+  const [fullPath, setFullPath] = useState(audioPath)
+  useEffect(() => {
+    if (audioPath) {
+      const base = import.meta.env.BASE_URL || ''
+      setFullPath(`${base.replace(/\/+$/, '')}${normalizeAudioPath(audioPath)}`)
+    } else {
+      setFullPath(audioPath)
+    }
+  }, [audioPath])
+
+  const { status, play, stop } = useRobustAudio(fullPath, speakText)
   const soundEnabled = useAppStore((s) => s.soundEnabled)
 
   useEffect(() => {

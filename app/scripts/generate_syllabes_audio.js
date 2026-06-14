@@ -90,7 +90,8 @@ async function main() {
 
     // ── Daal (د) ──────────────────────────────────────────
     { text: 'دَ.',  path: `${DIR}/daal_fatha.mp3` },
-    { text: 'دِ.',  path: `${DIR}/daal_kasra.mp3` },
+    // "دِيك، دِ." — contexte pour éviter confusion TTS avec "ب" (bug connu)
+    { text: 'دِيك، دِ.',  path: `${DIR}/daal_kasra.mp3` },
     { text: 'دُ.',  path: `${DIR}/daal_damma.mp3` },
 
     // ── Raa (ر) ───────────────────────────────────────────
@@ -113,10 +114,11 @@ async function main() {
     { text: 'طِ.',  path: `${DIR}/taa_kasra.mp3` },
     { text: 'طُ.',  path: `${DIR}/taa_damma.mp3` },
 
-    // ── 'Ayn (ع) ──────────────────────────────────────────
-    { text: 'عَ.',  path: `${DIR}/ayn_fatha.mp3` },
-    { text: 'عِ.',  path: `${DIR}/ayn_kasra.mp3` },
-    { text: 'عُ.',  path: `${DIR}/ayn_damma.mp3` },
+    // ── 'Ayn (ع) — texte étendu pour forcer le son pharyngal ──────────────
+    // "عَيْن، عَ." : le contexte "عَيْن" aide ElevenLabs à prononcer le ع pharyngal
+    { text: 'عَيْن، عَ.',  path: `${DIR}/ayn_fatha.mp3` },
+    { text: 'عَيْن، عِ.',  path: `${DIR}/ayn_kasra.mp3` },
+    { text: 'عَيْن، عُ.',  path: `${DIR}/ayn_damma.mp3` },
 
     // ── Laam (ل) ──────────────────────────────────────────
     { text: 'لَ.',  path: `${DIR}/laam_fatha.mp3` },
