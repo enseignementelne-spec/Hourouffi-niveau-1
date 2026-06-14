@@ -11,6 +11,7 @@ import ConfettiOverlay from '../components/ui/ConfettiOverlay'
 import { playSuccess, playError, playVictory, playPoints } from '../utils/soundEffects'
 import { AuditingMetrics, calculateDifficulty, estimateConfidence } from '../utils/auditingMetrics'
 import PremiumAudioPlayer from '../components/ui/PremiumAudioPlayer'
+import { speakTTS } from '../services/audioService'
 
 export default function Conversation() {
   const activeProfile = useProfileStore(s => s.getActiveProfile())
@@ -80,6 +81,10 @@ export default function Conversation() {
 
     if (option.correct) {
       playSuccess()
+
+      // Lire la bonne réponse à voix haute après le son de succès
+      setTimeout(() => speakTTS(option.text), 400)
+
       AuditingMetrics.track({
         module: 'conversation',
         type: 'correct',
@@ -97,17 +102,20 @@ export default function Conversation() {
         }
       })
       if (currentRound + 1 < scenario.rounds.length) {
+        // Délai allongé pour laisser le TTS finir avant de passer au round suivant
         setTimeout(() => {
           setCurrentRound(r => r + 1)
           setSelectedOption(null)
-        }, 1500)
+        }, 2200)
       } else {
-        setShowConfetti(true)
-        setIsCompleted(true)
-        addPoints(15)
-        addResult(activeProfile.id, { type: 'conversation', completed: true, scenarioId: scenario.id })
-        playVictory()
-        playPoints()
+        setTimeout(() => {
+          setShowConfetti(true)
+          setIsCompleted(true)
+          addPoints(15)
+          addResult(activeProfile.id, { type: 'conversation', completed: true, scenarioId: scenario.id })
+          playVictory()
+          playPoints()
+        }, 2200)
       }
     } else {
       playError()
@@ -210,8 +218,10 @@ export default function Conversation() {
                     }`}
                   >
                     {selectedOption === i && (
-                      <span className="flex-shrink-0">
-                        {option.correct ? <CheckCircle2 className="h-6 w-6" /> : '❌'}
+                      <span className="flex-shrink-0 flex items-center gap-2">
+                        {option.correct
+                          ? <><CheckCircle2 className="h-6 w-6" /><Volume2 className="h-4 w-4 animate-pulse" /></>
+                          : '❌'}
                       </span>
                     )}
                     <span className="flex-1" dir="rtl">{option.text}</span>
