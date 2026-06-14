@@ -32,5 +32,5 @@ export default defineConfig({
       }
     })
   ],
-  base: '/',
+  base: '/Hourouffi-niveau-1/',
 })
