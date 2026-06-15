@@ -1,35 +1,56 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { useProfileStore } from '../store/useProfileStore'
 import { useGameStore } from '../store/useGameStore'
 import { paysArabes, regions } from '../data/paysArabes'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Globe, RotateCcw, ChevronRight } from 'lucide-react'
-import { speakTTS } from '../services/audioService'
+import { ArrowLeft, Globe, RotateCcw, ChevronRight, Volume2, Map } from 'lucide-react'
 import { playSuccess, playError, playVictory } from '../utils/soundEffects'
+import CarteInteractive from '../components/CarteInteractive'
 
 const MODES = [
-  { id: 'flashcard', label: 'Flashcards', labelAr: 'بِطَاقَات', desc: 'Découvre les pays arabes', emoji: '🃏' },
-  { id: 'quiz',      label: 'Quiz',       labelAr: 'اِخْتِبَار', desc: 'Reconnais le drapeau',    emoji: '🚩' },
+  { id: 'carte',     label: 'Carte interactive', labelAr: 'الخَرِيطَة', desc: 'Explore la carte et clique sur les pays', emoji: '🗺️' },
+  { id: 'flashcard', label: 'Flashcards',         labelAr: 'بِطَاقَات',  desc: 'Découvre les pays arabes',               emoji: '🃏' },
+  { id: 'quiz',      label: 'Quiz',               labelAr: 'اِخْتِبَار', desc: 'Reconnais le drapeau',                   emoji: '🚩' },
 ]
 
 function shuffle(arr) {
   return [...arr].sort(() => Math.random() - 0.5)
 }
 
-function buildQuiz() {
-  const pool = shuffle(paysArabes)
-  return pool.map((pays) => {
+function buildQuiz(pool) {
+  return shuffle(pool).map((pays) => {
     const wrong = shuffle(paysArabes.filter(p => p.id !== pays.id)).slice(0, 3)
-    const choices = shuffle([pays, ...wrong])
-    return { pays, choices, answered: null }
+    return { pays, choices: shuffle([pays, ...wrong]), answered: null }
   })
+}
+
+function useCountryAudio() {
+  const audioRef = useRef(null)
+  const play = useCallback((pays) => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+    }
+    const audio = new Audio(import.meta.env.BASE_URL + pays.audio)
+    audioRef.current = audio
+    audio.play().catch(() => {
+      if ('speechSynthesis' in window) {
+        const utt = new SpeechSynthesisUtterance(pays.ar)
+        utt.lang = 'ar-SA'
+        window.speechSynthesis.speak(utt)
+      }
+    })
+    return audio
+  }, [])
+  return play
 }
 
 export default function GeographiePaysArabes() {
   const activeProfile = useProfileStore(s => s.getActiveProfile())
   const addPoints = useProfileStore(s => s.addPoints)
   const addResult = useGameStore(s => s.addResult)
+  const playAudio = useCountryAudio()
 
   const [mode, setMode] = useState(null)
   const [region, setRegion] = useState(null)
@@ -45,20 +66,13 @@ export default function GeographiePaysArabes() {
   const filteredPays = region ? paysArabes.filter(p => p.region === region) : paysArabes
 
   const startFlashcard = () => {
-    setFcIndex(0)
-    setFcFlipped(false)
-    setDone(false)
-    setMode('flashcard')
+    setFcIndex(0); setFcFlipped(false); setDone(false); setMode('flashcard')
   }
-
   const startQuiz = () => {
     const pool = region ? paysArabes.filter(p => p.region === region) : paysArabes
-    setQuiz(buildQuiz().filter(q => pool.some(p => p.id === q.pays.id)))
-    setQIndex(0)
-    setScore(0)
-    setDone(false)
-    setMode('quiz')
+    setQuiz(buildQuiz(pool)); setQIndex(0); setScore(0); setDone(false); setMode('quiz')
   }
+  const startCarte = () => { setDone(false); setMode('carte') }
 
   const handleFcNext = () => {
     if (fcIndex >= filteredPays.length - 1) {
@@ -77,12 +91,7 @@ export default function GeographiePaysArabes() {
     const correct = choice.id === quiz[qIndex].pays.id
     const newQuiz = quiz.map((q, i) => i === qIndex ? { ...q, answered: choice.id } : q)
     setQuiz(newQuiz)
-    if (correct) {
-      playSuccess()
-      setScore(s => s + 1)
-    } else {
-      playError()
-    }
+    if (correct) { playSuccess(); setScore(s => s + 1) } else { playError() }
     setTimeout(() => {
       if (qIndex >= quiz.length - 1) {
         setDone(true)
@@ -110,18 +119,13 @@ export default function GeographiePaysArabes() {
 
         {/* Filtre région */}
         <div className="flex gap-2 justify-center mb-6 flex-wrap">
-          <button
-            onClick={() => setRegion(null)}
-            className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${!region ? 'bg-brand-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-          >
+          <button onClick={() => setRegion(null)}
+            className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${!region ? 'bg-brand-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
             🌍 Tous les pays
           </button>
           {regions.map(r => (
-            <button
-              key={r.id}
-              onClick={() => setRegion(r.id)}
-              className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${region === r.id ? 'bg-brand-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-            >
+            <button key={r.id} onClick={() => setRegion(r.id)}
+              className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${region === r.id ? 'bg-brand-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
               {r.emoji} {r.labelFr}
             </button>
           ))}
@@ -131,7 +135,7 @@ export default function GeographiePaysArabes() {
           {MODES.map((m, i) => (
             <motion.button
               key={m.id}
-              onClick={() => m.id === 'flashcard' ? startFlashcard() : startQuiz()}
+              onClick={() => m.id === 'flashcard' ? startFlashcard() : m.id === 'quiz' ? startQuiz() : startCarte()}
               className="w-full rounded-3xl overflow-hidden card-shadow hover:card-shadow-lg transition-all group"
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
             >
@@ -140,7 +144,7 @@ export default function GeographiePaysArabes() {
                 <div className="text-left flex-1">
                   <h3 className="font-arabic text-xl font-bold" dir="rtl">{m.labelAr}</h3>
                   <p className="text-sm opacity-90 font-bold">{m.label} — {m.desc}</p>
-                  <p className="text-xs opacity-70 mt-1">{filteredPays.length} pays</p>
+                  {m.id !== 'carte' && <p className="text-xs opacity-70 mt-1">{filteredPays.length} pays</p>}
                 </div>
                 <ChevronRight className="h-6 w-6 opacity-60 group-hover:opacity-100 transition-opacity" />
               </div>
@@ -148,16 +152,17 @@ export default function GeographiePaysArabes() {
           ))}
         </div>
 
-        {/* Preview des drapeaux */}
         <div className="mt-8 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
           <p className="text-xs text-slate-400 font-bold mb-3 text-center">Les pays ({filteredPays.length})</p>
           <div className="flex flex-wrap gap-2 justify-center">
             {filteredPays.map(p => (
-              <div key={p.id} className="flex items-center gap-1 text-sm">
-                <span className="text-2xl">{p.emoji}</span>
-              </div>
+              <button key={p.id} onClick={() => playAudio(p)} title={p.fr}
+                className="text-2xl hover:scale-125 transition-transform active:scale-110" >
+                {p.emoji}
+              </button>
             ))}
           </div>
+          <p className="text-center text-xs text-slate-300 mt-2">👆 Clique sur un drapeau pour écouter</p>
         </div>
       </div>
     )
@@ -173,7 +178,9 @@ export default function GeographiePaysArabes() {
           <p className="text-slate-500 font-bold mb-2">
             {mode === 'quiz' ? `Score : ${score} / ${quiz?.length}` : 'Tu connais les pays arabes !'}
           </p>
-          <p className="text-brand-600 font-bold text-lg mb-8">+{mode === 'quiz' ? Math.round(score / (quiz?.length || 1) * 20) : 10} ⭐</p>
+          <p className="text-brand-600 font-bold text-lg mb-8">
+            +{mode === 'quiz' ? Math.round(score / (quiz?.length || 1) * 20) : 10} ⭐
+          </p>
           <div className="flex gap-3 justify-center">
             <button onClick={() => { setMode(null); setDone(false) }}
               className="px-6 py-3 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 transition-all">
@@ -185,6 +192,24 @@ export default function GeographiePaysArabes() {
             </button>
           </div>
         </motion.div>
+      </div>
+    )
+  }
+
+  // Mode Carte
+  if (mode === 'carte') {
+    return (
+      <div className="max-w-2xl mx-auto py-6">
+        <div className="flex items-center justify-between mb-4">
+          <button onClick={() => setMode(null)} className="flex items-center gap-1.5 text-slate-400 hover:text-brand-600 font-bold text-sm">
+            <ArrowLeft className="h-4 w-4" /> Retour
+          </button>
+          <div className="flex items-center gap-2">
+            <Map className="h-4 w-4 text-emerald-500" />
+            <span className="font-arabic text-brand-700 font-bold" dir="rtl">الخَرِيطَةُ التَّفَاعُلِيَّة</span>
+          </div>
+        </div>
+        <CarteInteractive />
       </div>
     )
   }
@@ -201,17 +226,14 @@ export default function GeographiePaysArabes() {
           <span className="text-sm font-bold text-slate-400">{fcIndex + 1} / {filteredPays.length}</span>
         </div>
 
-        {/* Flashcard */}
         <motion.div
           className="relative mx-auto w-full max-w-sm cursor-pointer mb-6"
-          onClick={() => { setFcFlipped(f => !f); speakTTS(pays.ar) }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          onClick={() => { setFcFlipped(f => !f); playAudio(pays) }}
+          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
         >
           <AnimatePresence mode="wait">
             {!fcFlipped ? (
-              <motion.div
-                key="front"
+              <motion.div key="front"
                 initial={{ rotateY: 90 }} animate={{ rotateY: 0 }} exit={{ rotateY: -90 }}
                 transition={{ duration: 0.3 }}
                 className="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl p-10 text-center text-white card-shadow"
@@ -220,8 +242,7 @@ export default function GeographiePaysArabes() {
                 <p className="text-sm opacity-80 font-bold">Clique pour découvrir le nom</p>
               </motion.div>
             ) : (
-              <motion.div
-                key="back"
+              <motion.div key="back"
                 initial={{ rotateY: 90 }} animate={{ rotateY: 0 }} exit={{ rotateY: -90 }}
                 transition={{ duration: 0.3 }}
                 className="bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl p-10 text-center text-white card-shadow"
@@ -229,25 +250,27 @@ export default function GeographiePaysArabes() {
                 <p className="text-5xl mb-3">{pays.emoji}</p>
                 <p className="font-arabic text-4xl font-bold mb-2" dir="rtl">{pays.ar}</p>
                 <p className="text-lg font-bold opacity-90">{pays.fr}</p>
-                <div className="mt-4 text-sm opacity-70">
+                <div className="mt-4 text-sm opacity-75">
                   <span className="font-arabic" dir="rtl">العَاصِمَة: {pays.capitale.ar}</span>
                   <span className="mx-2">·</span>
                   <span>{pays.capitale.fr}</span>
                 </div>
+                <button onClick={e => { e.stopPropagation(); playAudio(pays) }}
+                  className="mt-4 flex items-center gap-1.5 mx-auto bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-sm font-bold transition-all">
+                  <Volume2 className="h-4 w-4" /> Réécouter
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
         </motion.div>
 
         <p className="text-center text-xs text-slate-400 font-medium mb-6">
-          {fcFlipped ? '🔊 Clique pour entendre' : '👆 Clique pour retourner la carte'}
+          {fcFlipped ? '🔊 Audio joué automatiquement — bouton pour réécouter' : '👆 Clique pour retourner la carte'}
         </p>
 
         <div className="flex gap-3 justify-center">
-          <button
-            onClick={handleFcNext}
-            className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 transition-all shadow-lg"
-          >
+          <button onClick={handleFcNext}
+            className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 transition-all shadow-lg">
             {fcIndex >= filteredPays.length - 1 ? '✅ Terminer' : 'Suivant'} <ChevronRight className="h-4 w-4" />
           </button>
         </div>
@@ -276,7 +299,7 @@ export default function GeographiePaysArabes() {
           {q.choices.map((choice) => {
             const isAnswered = q.answered !== null
             const isSelected = q.answered === choice.id
-            const isCorrect = choice.id === q.pays.id
+            const isCorrect  = choice.id === q.pays.id
             let cls = 'rounded-2xl p-4 border-2 text-center font-bold transition-all '
             if (!isAnswered) {
               cls += 'border-slate-200 bg-white dark:bg-slate-800 dark:border-slate-700 hover:border-brand-300 hover:bg-brand-50 cursor-pointer'
@@ -291,7 +314,7 @@ export default function GeographiePaysArabes() {
               <button key={choice.id} className={cls} onClick={() => handleAnswer(choice)} disabled={isAnswered}>
                 <p className="font-arabic text-xl mb-1" dir="rtl">{choice.ar}</p>
                 <p className="text-xs text-slate-400">{choice.fr}</p>
-                {isAnswered && isCorrect && <p className="text-emerald-500 mt-1">✅</p>}
+                {isAnswered && isCorrect  && <p className="text-emerald-500 mt-1">✅</p>}
                 {isAnswered && isSelected && !isCorrect && <p className="text-red-500 mt-1">❌</p>}
               </button>
             )
