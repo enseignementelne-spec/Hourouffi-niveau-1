@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "media:check": "node scripts/check-media.js",
     "media:rename-images": "node scripts/rename-vocab-images.js",
-    "generate-audio": "node scripts/generate_audio.js"
+    "generate-audio": "node scripts/generate_audio.js",
+    "generate-geographie-audio": "node scripts/generate_geographie_audio.js",
+    "generate-geographie-audio:force": "node scripts/generate_geographie_audio.js --force"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",

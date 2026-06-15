@@ -243,7 +243,7 @@ export default function GeographiePaysArabes() {
 
         <motion.div
           className="relative mx-auto w-full max-w-sm cursor-pointer mb-6"
-          onClick={() => { setFcFlipped(f => !f); playAudio(pays) }}
+          onClick={() => { if (!fcFlipped) playAudio(pays); setFcFlipped(f => !f) }}
           whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
         >
           <AnimatePresence mode="wait">

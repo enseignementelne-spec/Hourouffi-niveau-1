@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback, useMemo } from 'react'
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Volume2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react'
@@ -14,15 +14,8 @@ const SMALL_COUNTRY_MARKERS = {
   '634': { coords: [51.2, 25.3],  label: 'QA' },  // Qatar
 }
 
-// Styles carte
-const STYLE_DEFAULT    = { fill: '#d1fae5', stroke: '#ffffff', strokeWidth: 0.5, outline: 'none' }
-const STYLE_ARAB_OTHER = { fill: '#a7f3d0', stroke: '#ffffff', strokeWidth: 0.5, outline: 'none' }
-const STYLE_SELECTED   = { fill: '#f59e0b', stroke: '#ffffff', strokeWidth: 1,   outline: 'none' }
-const STYLE_HOVER      = { fill: '#34d399', stroke: '#ffffff', strokeWidth: 0.8, outline: 'none' }
-const STYLE_NEUTRAL    = { fill: '#e2e8f0', stroke: '#ffffff', strokeWidth: 0.4, outline: 'none' }
-
 export default function CarteInteractive() {
-  const isoMap = isoToPaysFn()
+  const isoMap = useMemo(() => isoToPaysFn(), [])
   const audioRef = useRef(null)
   const [selected, setSelected] = useState(null)
   const [zoom, setZoom] = useState(1.5)
@@ -56,15 +49,6 @@ export default function CarteInteractive() {
     setSelected(pays)
     playAudio(pays)
   }, [playAudio])
-
-  const getStyle = useCallback((geoId) => {
-    const pays = isoMap[geoId]
-    if (!pays) {
-      return ALL_ARAB_ISO.has(geoId) ? STYLE_ARAB_OTHER : STYLE_NEUTRAL
-    }
-    if (selected && selected.id === pays.id) return STYLE_SELECTED
-    return STYLE_DEFAULT
-  }, [selected, isoMap])
 
   return (
     <div className="w-full">
