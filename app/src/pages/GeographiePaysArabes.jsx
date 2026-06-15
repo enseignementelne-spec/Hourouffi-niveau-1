@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { useProfileStore } from '../store/useProfileStore'
 import { useGameStore } from '../store/useGameStore'
@@ -68,6 +68,13 @@ export default function GeographiePaysArabes() {
   const [qIndex, setQIndex] = useState(0)
   const [score, setScore] = useState(0)
   const [done, setDone] = useState(false)
+
+  // Auto-play country name when quiz question changes
+  useEffect(() => {
+    if (mode === 'quiz' && quiz && quiz[qIndex]) {
+      playAudio(quiz[qIndex].pays)
+    }
+  }, [qIndex, mode]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!activeProfile) return <Navigate to="/" replace />
 
@@ -299,8 +306,12 @@ export default function GeographiePaysArabes() {
         </div>
 
         <div className="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl p-10 text-center text-white card-shadow mb-6">
-          <p className="text-8xl mb-2">{q.pays.emoji}</p>
-          <p className="text-sm opacity-80 font-bold">Quel est ce pays ?</p>
+          <p className="text-8xl mb-3">{q.pays.emoji}</p>
+          <p className="text-sm opacity-80 font-bold mb-4">Quel est ce pays ?</p>
+          <button onClick={() => playAudio(q.pays)}
+            className="mx-auto flex items-center gap-1.5 bg-white/20 hover:bg-white/30 active:bg-white/40 px-4 py-2 rounded-xl text-sm font-bold transition-all border border-white/30">
+            <Volume2 className="h-4 w-4" /> Réécouter le nom
+          </button>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
