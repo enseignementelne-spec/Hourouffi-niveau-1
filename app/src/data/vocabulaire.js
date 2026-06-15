@@ -41,6 +41,8 @@ const rawCategories = [
       { fr: 'Merci',                     ar: 'شُكْرًا',                translit: 'Shukran'                },
       { fr: 'De rien',                   ar: 'عَفْوًا',                translit: "'Afwan"                 },
       { fr: 'Comment vas-tu ?',          ar: 'كَيْفَ حَالُكَ؟',        translit: 'Kayfa ḥāluka?'          },
+      { fr: 'Bonjour (réponse matin)',   ar: 'صَبَاحُ النُّور',         translit: 'Ṣabāḥu an-nūr'         },
+      { fr: 'À bientôt !',              ar: 'إِلَى اللِّقَاء',         translit: "Ilā al-liqā'"           },
     ]
   },
   {

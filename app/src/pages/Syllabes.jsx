@@ -4,7 +4,7 @@ import { useProfileStore } from '../store/useProfileStore'
 import { useGameStore } from '../store/useGameStore'
 import { useSRSStore } from '../store/useSRSStore'
 import { getCurrentLevel, getAvailableLetterIds } from '../data/curriculum'
-import { syllabesData, voyelles } from '../data/syllabes'
+import { syllabesData, voyelles, sukunWords } from '../data/syllabes'
 import PremiumAudioPlayer from '../components/ui/PremiumAudioPlayer'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -42,6 +42,7 @@ const MODES = [
   { id: 'ecoute',   label: 'Écoute & Réponds', labelAr: 'اِسْمَعْ وَأَجِبْ',   desc: "Écoute la syllabe, clique sur la bonne",       emoji: '👂' },
   { id: 'associe',  label: 'Lettre + Voyelle',  labelAr: 'حَرْف + حَرَكَة',    desc: "Choisis la voyelle pour former la syllabe",     emoji: '🔗' },
   { id: 'lecture',  label: 'Lis la syllabe',    labelAr: 'اِقْرَأِ المَقْطَع', desc: "Regarde la syllabe, clique pour entendre",      emoji: '👁️' },
+  { id: 'sukun',    label: 'Le Sukūn',          labelAr: 'السُّكُون',           desc: "Reconnais le sukūn — la lettre sans voyelle",   emoji: '🔇' },
 ]
 
 export default function Syllabes() {
@@ -69,7 +70,7 @@ export default function Syllabes() {
   const availableLetterIds = getAvailableLetterIds(currentLevel)
 
   const startMode = useCallback((m) => {
-    const qs = buildQuestions(availableLetterIds)
+    const qs = m === 'sukun' ? sukunWords.map((_, i) => i) : buildQuestions(availableLetterIds)
     setMode(m)
     setQuestions(qs)
     setQIndex(0)
@@ -127,7 +128,7 @@ export default function Syllabes() {
         <p className="text-center text-slate-400 font-bold text-sm mb-8">Syllabes — consonne + voyelle</p>
 
         {/* Rappel voyelles */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl card-shadow p-4 mb-6 border border-slate-100 dark:border-slate-700">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl card-shadow p-4 mb-4 border border-slate-100 dark:border-slate-700">
           <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Les 3 voyelles courtes</p>
           <div className="flex justify-around">
             {voyelles.map(v => (
@@ -138,6 +139,15 @@ export default function Syllabes() {
                 <span className="text-[9px] text-slate-400 block leading-tight">{v.description}</span>
               </div>
             ))}
+          </div>
+        </div>
+        {/* Rappel sukūn */}
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 mb-6 border border-slate-200 dark:border-slate-700 flex items-center gap-4">
+          <span className="font-arabic text-4xl text-slate-500">ـْ</span>
+          <div>
+            <p className="text-xs font-black text-slate-500 uppercase tracking-wider">السُّكُون — Sukūn</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Absence de voyelle — la lettre ne fait <strong>aucun</strong> son de voyelle</p>
+            <p className="text-[11px] text-slate-400">Ex : <span className="font-arabic text-sm font-bold">نَعَمْ</span> (naʿam) — le مْ final n'a pas de voyelle</p>
           </div>
         </div>
 
@@ -163,7 +173,7 @@ export default function Syllabes() {
     )
   }
 
-  if (questions.length === 0) return (
+  if (questions.length === 0 && mode !== 'sukun') return (
     <div className="text-center py-16 text-slate-400">
       <p className="text-5xl mb-4">🔒</p>
       <p className="font-bold">Débloquez plus de lettres pour accéder aux syllabes !</p>
@@ -199,6 +209,47 @@ export default function Syllabes() {
           </button>
         </div>
       </motion.div>
+    )
+  }
+
+  // --- Jeu : Mode "sukun" (reconnaissance du sukūn dans les mots) ---
+  const renderSukun = () => {
+    const word = sukunWords[qIndex % sukunWords.length]
+    return (
+      <>
+        <div className="text-center mb-6">
+          <p className="text-sm font-bold text-slate-400 mb-4">Observe le sukūn <span className="font-arabic text-xl">ـْ</span> dans ce mot :</p>
+          <div className="bg-white dark:bg-slate-800 rounded-3xl card-shadow border border-slate-100 dark:border-slate-700 p-8 inline-block">
+            <p className="font-arabic text-7xl font-black text-brand-700 mb-3" dir="rtl">{word.mot}</p>
+            <p className="text-lg font-bold text-slate-500 mb-1">{word.translit}</p>
+            <p className="text-sm text-slate-400">{word.fr}</p>
+          </div>
+        </div>
+        <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl p-4 mb-6 border border-amber-200 dark:border-amber-800">
+          <p className="text-sm font-bold text-amber-700 dark:text-amber-300 text-center mb-2">
+            🔇 La lettre avec le sukūn :
+          </p>
+          <p className="font-arabic text-4xl text-center font-black text-amber-600">{word.lettreSukun}</p>
+          <p className="text-xs text-center text-amber-600 mt-1">
+            Cette lettre est en position <strong>{word.position}</strong> — elle ne fait <strong>aucun son de voyelle</strong>
+          </p>
+        </div>
+        <div className="flex justify-center">
+          <PremiumAudioPlayer url={null} fallbackText={word.mot} size="lg" />
+        </div>
+        <button
+          onClick={() => {
+            setScore(s => s + POINTS_PER_CORRECT)
+            addPoints(POINTS_PER_CORRECT)
+            addResult(activeProfile.id, { type: 'syllabes', correct: true })
+            if (qIndex + 1 >= sukunWords.length) { setGameOver(true); playVictory() }
+            else { setQIndex(q => q + 1) }
+          }}
+          className="mt-6 w-full py-4 rounded-xl bg-brand-600 text-white font-bold text-lg hover:bg-brand-700 transition-colors"
+        >
+          ✅ J'ai compris ! Suivant →
+        </button>
+      </>
     )
   }
 
@@ -360,6 +411,7 @@ export default function Syllabes() {
           {mode === 'ecoute'  && renderEcoute()}
           {mode === 'associe' && renderAssocie()}
           {mode === 'lecture' && renderLecture()}
+          {mode === 'sukun'   && renderSukun()}
 
           {/* Feedback */}
           {selected !== null && mode !== 'lecture' && (

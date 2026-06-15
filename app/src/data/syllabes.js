@@ -7,6 +7,16 @@ export const voyelles = [
   { id: 'damma',  symbole: 'ـُ', nom: 'ضَمَّة',  son: 'u',  color: '#22c55e', description: '« u » court — comme dans « pull »' },
 ]
 
+// Sukūn — voyelle zéro (absence de voyelle) — reconnaissance visuelle uniquement
+export const sukunWords = [
+  { mot: 'نَعَمْ', translit: 'naʿam', fr: 'Oui',         lettreSukun: 'مْ', position: 'finale' },
+  { mot: 'هَلْ',  translit: 'hal',   fr: 'Est-ce que…', lettreSukun: 'لْ', position: 'finale' },
+  { mot: 'مِنْ',  translit: 'min',   fr: 'De / Parmi',  lettreSukun: 'نْ', position: 'finale' },
+  { mot: 'قِفْ',  translit: 'qif',   fr: 'Lève-toi',    lettreSukun: 'فْ', position: 'finale' },
+  { mot: 'اِجْلِسْ', translit: 'ijlis', fr: 'Assieds-toi', lettreSukun: 'سْ', position: 'finale' },
+  { mot: 'كِتَابْ', translit: 'kitāb', fr: 'Livre',       lettreSukun: 'بْ', position: 'finale' },
+]
+
 // Les 12 lettres prioritaires avec leurs syllabes
 export const syllabesData = [
   {

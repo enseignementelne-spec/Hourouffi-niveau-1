@@ -1,0 +1,54 @@
+// Comptines thématiques — Référentiel Année 1
+// 3 comptines : couleurs, nombres, animaux
+
+export const comptines = [
+  {
+    id: 'couleurs',
+    titre: 'أُنْشُودَةُ الأَلْوَان',
+    titreFr: 'La comptine des couleurs',
+    emoji: '🎨',
+    color: 'from-pink-400 to-rose-500',
+    lignes: [
+      { ar: 'أَحْمَرُ كَالتُّفَّاحَة',   fr: 'Rouge comme la pomme',       emoji: '🍎' },
+      { ar: 'أَزْرَقُ كَالسَّمَاء',      fr: 'Bleu comme le ciel',          emoji: '☁️' },
+      { ar: 'أَخْضَرُ كَالعُشْب',        fr: 'Vert comme l\'herbe',         emoji: '🌿' },
+      { ar: 'أَصْفَرُ كَالشَّمْس',       fr: 'Jaune comme le soleil',       emoji: '☀️' },
+      { ar: 'أَبْيَضُ كَالثَّلْج',       fr: 'Blanc comme la neige',        emoji: '❄️' },
+      { ar: 'أَسْوَدُ كَاللَّيْل',       fr: 'Noir comme la nuit',          emoji: '🌙' },
+      { ar: 'هَيَّا نَغْنِي سَوِيًّا',   fr: 'Allons chanter ensemble !',   emoji: '🎵' },
+      { ar: 'الأَلْوَانُ جَمِيلَة',      fr: 'Les couleurs sont belles !',  emoji: '🌈' },
+    ]
+  },
+  {
+    id: 'nombres',
+    titre: 'أُنْشُودَةُ الأَرْقَام',
+    titreFr: 'La comptine des nombres',
+    emoji: '🔢',
+    color: 'from-blue-400 to-indigo-500',
+    lignes: [
+      { ar: 'وَاحِد، اِثْنَان، ثَلَاثَة',           fr: 'Un, deux, trois',               emoji: '1️⃣2️⃣3️⃣' },
+      { ar: 'أَرْبَعَة، خَمْسَة، سِتَّة',           fr: 'Quatre, cinq, six',             emoji: '4️⃣5️⃣6️⃣' },
+      { ar: 'سَبْعَة، ثَمَانِيَة، تِسْعَة',         fr: 'Sept, huit, neuf',              emoji: '7️⃣8️⃣9️⃣' },
+      { ar: 'وَعَشَرَة! هَيَّا نَعُدّ مَعًا',       fr: 'Et dix ! Comptons ensemble',    emoji: '🔟' },
+      { ar: 'وَاحِد — اِثْنَان — ثَلَاثَة — أَرْبَعَة', fr: 'Un — deux — trois — quatre', emoji: '👏' },
+      { ar: 'خَمْسَة — سِتَّة — سَبْعَة — ثَمَانِيَة', fr: 'Cinq — six — sept — huit',  emoji: '👐' },
+      { ar: 'تِسْعَة — عَشَرَة — أَحْسَنْتَ',      fr: 'Neuf — dix — Bravo !',         emoji: '🎉' },
+    ]
+  },
+  {
+    id: 'animaux',
+    titre: 'أُنْشُودَةُ الحَيَوَانَات',
+    titreFr: 'La comptine des animaux',
+    emoji: '🐾',
+    color: 'from-emerald-400 to-teal-500',
+    lignes: [
+      { ar: 'قِطٌّ صَغِير يَقُول مِيَاو',          fr: 'Petit chat dit miaou',           emoji: '🐱' },
+      { ar: 'كَلْبٌ وَفِيٌّ يَقُول هَاو',          fr: 'Chien fidèle dit ouaf',          emoji: '🐶' },
+      { ar: 'طَائِرٌ يَغْنِي فِي السَّمَاء',        fr: 'L\'oiseau chante dans le ciel', emoji: '🐦' },
+      { ar: 'سَمَكٌ يَسْبَحُ فِي المَاء',           fr: 'Le poisson nage dans l\'eau',   emoji: '🐟' },
+      { ar: 'أَرْنَبٌ يَقْفِزُ هُنَا وَهُنَاك',     fr: 'Le lapin saute par-ci par-là', emoji: '🐰' },
+      { ar: 'دَجَاجَةٌ تَبْحَثُ عَنِ الطَّعَام',   fr: 'La poule cherche à manger',     emoji: '🐔' },
+      { ar: 'أُحِبُّ الحَيَوَانَات جَمِيعًا',       fr: 'J\'aime tous les animaux !',    emoji: '❤️' },
+    ]
+  },
+]

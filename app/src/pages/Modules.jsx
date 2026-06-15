@@ -5,7 +5,7 @@ import { useGameStore } from '../store/useGameStore'
 import { useSRSStore } from '../store/useSRSStore'
 import { getCurrentLevel, CURRICULUM_LEVELS, calculateLevelMastery } from '../data/curriculum'
 import { motion } from 'framer-motion'
-import { Headphones, Grid3X3, Ear, PenTool, Layers, Star, MessageCircle, Music, BookOpen, ClipboardCheck, Clock, Flame, ChevronRight as ChevRight } from 'lucide-react'
+import { Headphones, Grid3X3, Ear, PenTool, Layers, Star, MessageCircle, Music, BookOpen, ClipboardCheck, Clock, Flame, ChevronRight as ChevRight, Globe, Sparkles } from 'lucide-react'
 
 // Séquences recommandées — 3 exercices × 5 min — tournent tous les 3 jours
 const SESSION_SEQUENCES = [
@@ -36,6 +36,9 @@ const EXERCICES = [
   { id: 'conversation',path: '/conversation',nom: 'المحادثة',     nomAr: 'تَحَدَّثْ',     emoji: '💬', icon: MessageCircle, desc: 'تدرّب على الحوار والردّ على الأسئلة',           color: 'from-sky-400 to-sky-600',       pts: 15,  statKey: 'conversation' },
   { id: 'chanson',     path: '/chanson',     nom: 'أغنية الحروف', nomAr: 'الأَبْجَدِيَّة', emoji: '🎵', icon: Music,         desc: 'تعلّم الأبجدية العربية كاملة بالترتيب والصوت',  color: 'from-pink-400 to-pink-600',     pts: 10,  statKey: 'chanson',  isNew: true },
   { id: 'evaluation',  path: '/evaluation',  nom: 'تقييم المستوى',nomAr: 'تَقْيِيم',      emoji: '📊', icon: ClipboardCheck,desc: 'اختبر معرفتك واكسب شهادة إتمام المستوى',        color: 'from-indigo-400 to-indigo-600', pts: 50,  statKey: 'evaluation',isNew: true },
+  { id: 'comptines',  path: '/comptines',  nom: 'الأناشيد الموضوعاتية', nomAr: 'أَنَاشِيد',  emoji: '🎨', icon: Music,         desc: 'اسمع وردد الأناشيد: الألوان، الأرقام، الحيوانات', color: 'from-pink-400 to-rose-500',     pts: 10,  statKey: 'comptine',  isNew: true },
+  { id: 'geographie', path: '/geographie', nom: 'البلاد العربية',       nomAr: 'جُغْرَافِيَا', emoji: '🌍', icon: Globe,         desc: 'تعرّف على البلاد العربية وعواصمها بالخريطة',     color: 'from-emerald-400 to-teal-500',  pts: 15,  statKey: 'geographie',isNew: true },
+  { id: 'fetes',      path: '/fetes',      nom: 'الأعياد الإسلامية',    nomAr: 'أَعْيَاد',    emoji: '🌙', icon: Sparkles,      desc: 'تعلّم عن عيد الفطر وعيد الأضحى وشهر رمضان',    color: 'from-yellow-400 to-amber-500',  pts: 10,  statKey: 'fete',      isNew: true },
 ]
 
 export default function Modules() {

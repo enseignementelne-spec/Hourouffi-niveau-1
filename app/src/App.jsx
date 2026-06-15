@@ -15,6 +15,9 @@ import Conversation from './pages/Conversation'
 import Syllabes from './pages/Syllabes'
 import ChansonAlphabet from './pages/ChansonAlphabet'
 import EvaluationNiveau from './pages/EvaluationNiveau'
+import ComptinesThematiques from './pages/ComptinesThematiques'
+import GeographiePaysArabes from './pages/GeographiePaysArabes'
+import FetesReligieuses from './pages/FetesReligieuses'
 import { useAppStore } from './store/useAppStore'
 
 function App() {
@@ -45,6 +48,9 @@ function App() {
           <Route path="syllabes" element={<Syllabes />} />
           <Route path="chanson" element={<ChansonAlphabet />} />
           <Route path="evaluation" element={<EvaluationNiveau />} />
+          <Route path="comptines" element={<ComptinesThematiques />} />
+          <Route path="geographie" element={<GeographiePaysArabes />} />
+          <Route path="fetes" element={<FetesReligieuses />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
