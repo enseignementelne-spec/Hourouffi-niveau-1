@@ -25,8 +25,8 @@ export default function CarteInteractive() {
   const isoMap = isoToPaysFn()
   const audioRef = useRef(null)
   const [selected, setSelected] = useState(null)
-  const [zoom, setZoom] = useState(3)
-  const [center, setCenter] = useState([28, 23])
+  const [zoom, setZoom] = useState(1.5)
+  const [center, setCenter] = useState([20, 25])
 
   const playAudio = useCallback((pays) => {
     if (audioRef.current) {
@@ -35,14 +35,21 @@ export default function CarteInteractive() {
     }
     const audio = new Audio(import.meta.env.BASE_URL + pays.audio)
     audioRef.current = audio
-    audio.play().catch(() => {
-      // fallback TTS
+    let ttsUsed = false
+    const tts = () => {
+      if (ttsUsed) return
+      ttsUsed = true
       if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
         const utt = new SpeechSynthesisUtterance(pays.ar)
         utt.lang = 'ar-SA'
+        utt.rate = 0.85
         window.speechSynthesis.speak(utt)
       }
-    })
+    }
+    audio.onerror = tts
+    const p = audio.play()
+    if (p) p.catch(tts)
   }, [])
 
   const handleCountryClick = useCallback((pays) => {
@@ -66,15 +73,15 @@ export default function CarteInteractive() {
 
         {/* Contrôles zoom */}
         <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-10">
-          <button onClick={() => setZoom(z => Math.min(z + 0.8, 8))}
+          <button onClick={() => setZoom(z => Math.min(z + 0.8, 6))}
             className="w-8 h-8 rounded-xl bg-white/90 dark:bg-slate-700/90 shadow flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-white transition-all">
             <ZoomIn className="h-4 w-4" />
           </button>
-          <button onClick={() => setZoom(z => Math.max(z - 0.8, 1.5))}
+          <button onClick={() => setZoom(z => Math.max(z - 0.8, 1))}
             className="w-8 h-8 rounded-xl bg-white/90 dark:bg-slate-700/90 shadow flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-white transition-all">
             <ZoomOut className="h-4 w-4" />
           </button>
-          <button onClick={() => { setZoom(3); setCenter([28, 23]) }}
+          <button onClick={() => { setZoom(1.5); setCenter([20, 25]) }}
             className="w-8 h-8 rounded-xl bg-white/90 dark:bg-slate-700/90 shadow flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-white transition-all">
             <RotateCcw className="h-3.5 w-3.5" />
           </button>

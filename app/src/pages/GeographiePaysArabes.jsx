@@ -34,13 +34,21 @@ function useCountryAudio() {
     }
     const audio = new Audio(import.meta.env.BASE_URL + pays.audio)
     audioRef.current = audio
-    audio.play().catch(() => {
+    let ttsUsed = false
+    const tts = () => {
+      if (ttsUsed) return
+      ttsUsed = true
       if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
         const utt = new SpeechSynthesisUtterance(pays.ar)
         utt.lang = 'ar-SA'
+        utt.rate = 0.85
         window.speechSynthesis.speak(utt)
       }
-    })
+    }
+    audio.onerror = tts
+    const p = audio.play()
+    if (p) p.catch(tts)
     return audio
   }, [])
   return play
