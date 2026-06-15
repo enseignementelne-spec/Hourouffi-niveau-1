@@ -262,16 +262,16 @@ export default function GeographiePaysArabes() {
                 transition={{ duration: 0.3 }}
                 className="bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl p-10 text-center text-white card-shadow"
               >
-                <p className="text-5xl mb-3">{pays.emoji}</p>
-                <p className="font-arabic text-4xl font-bold mb-2" dir="rtl">{pays.ar}</p>
-                <p className="text-lg font-bold opacity-90">{pays.fr}</p>
-                <div className="mt-4 text-sm opacity-75">
+                <p className="text-8xl mb-3">{pays.emoji}</p>
+                <p className="font-arabic text-4xl font-bold mb-1" dir="rtl">{pays.ar}</p>
+                <p className="text-lg font-bold opacity-90 mb-3">{pays.fr}</p>
+                <div className="text-sm opacity-75 mb-3">
                   <span className="font-arabic" dir="rtl">العَاصِمَة: {pays.capitale.ar}</span>
                   <span className="mx-2">·</span>
                   <span>{pays.capitale.fr}</span>
                 </div>
                 <button onClick={e => { e.stopPropagation(); playAudio(pays) }}
-                  className="mt-4 flex items-center gap-1.5 mx-auto bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-sm font-bold transition-all">
+                  className="flex items-center gap-1.5 mx-auto bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-sm font-bold transition-all">
                   <Volume2 className="h-4 w-4" /> Réécouter
                 </button>
               </motion.div>
@@ -331,6 +331,7 @@ export default function GeographiePaysArabes() {
             }
             return (
               <button key={choice.id} className={cls} onClick={() => handleAnswer(choice)} disabled={isAnswered}>
+                <p className="text-3xl mb-1">{choice.emoji}</p>
                 <p className="font-arabic text-xl mb-1" dir="rtl">{choice.ar}</p>
                 <p className="text-xs text-slate-400">{choice.fr}</p>
                 {isAnswered && isCorrect  && <p className="text-emerald-500 mt-1">✅</p>}
