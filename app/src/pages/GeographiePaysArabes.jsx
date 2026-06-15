@@ -8,6 +8,18 @@ import { ArrowLeft, Globe, RotateCcw, ChevronRight, Volume2, Map } from 'lucide-
 import { playSuccess, playError, playVictory } from '../utils/soundEffects'
 import CarteInteractive from '../components/CarteInteractive'
 
+function FlagImg({ pays, className = '', size = 'md' }) {
+  const sizeMap = { sm: 'h-8', md: 'h-16', lg: 'h-24', xl: 'h-36' }
+  return (
+    <img
+      src={import.meta.env.BASE_URL + pays.flag}
+      alt={pays.fr}
+      onError={e => { e.currentTarget.style.display = 'none' }}
+      className={`object-contain rounded shadow-md ${sizeMap[size] || size} ${className}`}
+    />
+  )
+}
+
 const MODES = [
   { id: 'carte',     label: 'Carte interactive', labelAr: 'الخَرِيطَة', desc: 'Explore la carte et clique sur les pays', emoji: '🗺️' },
   { id: 'flashcard', label: 'Flashcards',         labelAr: 'بِطَاقَات',  desc: 'Découvre les pays arabes',               emoji: '🃏' },
@@ -169,11 +181,16 @@ export default function GeographiePaysArabes() {
 
         <div className="mt-8 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
           <p className="text-xs text-slate-400 font-bold mb-3 text-center">Les pays ({filteredPays.length})</p>
-          <div className="flex flex-wrap gap-2 justify-center">
+          <div className="flex flex-wrap gap-3 justify-center">
             {filteredPays.map(p => (
               <button key={p.id} onClick={() => playAudio(p)} title={p.fr}
-                className="text-2xl hover:scale-125 transition-transform active:scale-110" >
-                {p.emoji}
+                className="hover:scale-125 transition-transform active:scale-110 focus:outline-none" >
+                <img
+                  src={import.meta.env.BASE_URL + p.flag}
+                  alt={p.fr}
+                  onError={e => { e.currentTarget.style.display = 'none' }}
+                  className="h-8 object-contain rounded shadow-sm border border-slate-200"
+                />
               </button>
             ))}
           </div>
@@ -253,7 +270,9 @@ export default function GeographiePaysArabes() {
                 transition={{ duration: 0.3 }}
                 className="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl p-10 text-center text-white card-shadow"
               >
-                <p className="text-8xl mb-4">{pays.emoji}</p>
+                <div className="flex justify-center mb-4">
+                  <FlagImg pays={pays} size="xl" className="border-2 border-white/40" />
+                </div>
                 <p className="text-sm opacity-80 font-bold">Clique pour découvrir le nom</p>
               </motion.div>
             ) : (
@@ -262,7 +281,9 @@ export default function GeographiePaysArabes() {
                 transition={{ duration: 0.3 }}
                 className="bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl p-10 text-center text-white card-shadow"
               >
-                <p className="text-8xl mb-3">{pays.emoji}</p>
+                <div className="flex justify-center mb-3">
+                  <FlagImg pays={pays} size="xl" className="border-2 border-white/40" />
+                </div>
                 <p className="font-arabic text-4xl font-bold mb-1" dir="rtl">{pays.ar}</p>
                 <p className="text-lg font-bold opacity-90 mb-3">{pays.fr}</p>
                 <div className="text-sm opacity-75 mb-3">
@@ -305,9 +326,11 @@ export default function GeographiePaysArabes() {
           <span className="text-sm font-bold text-slate-400">{qIndex + 1} / {quiz.length} · {score} ⭐</span>
         </div>
 
-        <div className="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl p-10 text-center text-white card-shadow mb-6">
-          <p className="text-8xl mb-3">{q.pays.emoji}</p>
-          <p className="text-sm opacity-80 font-bold mb-4">Quel est ce pays ?</p>
+        <div className="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl p-8 text-center text-white card-shadow mb-6">
+          <div className="flex justify-center mb-4">
+            <FlagImg pays={q.pays} size="xl" className="border-2 border-white/40" />
+          </div>
+          <p className="text-sm opacity-80 font-bold mb-3">Quel est ce pays ?</p>
           <button onClick={() => playAudio(q.pays)}
             className="mx-auto flex items-center gap-1.5 bg-white/20 hover:bg-white/30 active:bg-white/40 px-4 py-2 rounded-xl text-sm font-bold transition-all border border-white/30">
             <Volume2 className="h-4 w-4" /> Réécouter le nom
@@ -331,8 +354,10 @@ export default function GeographiePaysArabes() {
             }
             return (
               <button key={choice.id} className={cls} onClick={() => handleAnswer(choice)} disabled={isAnswered}>
-                <p className="text-3xl mb-1">{choice.emoji}</p>
-                <p className="font-arabic text-xl mb-1" dir="rtl">{choice.ar}</p>
+                <div className="flex justify-center mb-2">
+                  <FlagImg pays={choice} size="md" />
+                </div>
+                <p className="font-arabic text-xl mb-0.5" dir="rtl">{choice.ar}</p>
                 <p className="text-xs text-slate-400">{choice.fr}</p>
                 {isAnswered && isCorrect  && <p className="text-emerald-500 mt-1">✅</p>}
                 {isAnswered && isSelected && !isCorrect && <p className="text-red-500 mt-1">❌</p>}

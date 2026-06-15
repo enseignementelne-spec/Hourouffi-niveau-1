@@ -163,7 +163,12 @@ export default function CarteInteractive() {
             transition={{ duration: 0.25 }}
             className="mt-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-slate-700 rounded-3xl p-5 border-2 border-emerald-200 dark:border-emerald-800 flex items-center gap-5"
           >
-            <span className="text-5xl flex-shrink-0">{selected.emoji}</span>
+            <img
+              src={import.meta.env.BASE_URL + selected.flag}
+              alt={selected.fr}
+              onError={e => { e.currentTarget.src = ''; e.currentTarget.style.display = 'none' }}
+              className="flex-shrink-0 h-14 object-contain rounded shadow-md border border-slate-200 dark:border-slate-600"
+            />
             <div className="flex-1 min-w-0">
               <p className="font-arabic text-2xl font-bold text-brand-700 dark:text-brand-300" dir="rtl">
                 {selected.ar}
