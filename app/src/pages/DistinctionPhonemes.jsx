@@ -110,7 +110,8 @@ export default function DistinctionPhonemes() {
       addResult(activeProfile.id, { type: 'phonemes', correct: true, phonemeId: current.id })
       playSuccess()
       playPoints()
-      playArabicFeedback('correct')
+      // Léger délai pour que la voix démarre après le carillon, pas en même temps
+      setTimeout(() => playArabicFeedback('correct'), 400)
       AuditingMetrics.track({
         module: 'phonemes', type: 'correct', component: 'DistinctionPhonemes',
         profileId: activeProfile.id, profileName: activeProfile.prenom,
@@ -119,7 +120,7 @@ export default function DistinctionPhonemes() {
     } else {
       addResult(activeProfile.id, { type: 'phonemes', correct: false, phonemeId: current.id })
       playError()
-      playArabicFeedback('retry')
+      setTimeout(() => playArabicFeedback('retry'), 400)
       AuditingMetrics.track({
         module: 'phonemes', type: 'error', component: 'DistinctionPhonemes',
         profileId: activeProfile.id, profileName: activeProfile.prenom,
@@ -141,7 +142,7 @@ export default function DistinctionPhonemes() {
         setIsCorrect(null)
         setTargetIsFirst(Math.random() > 0.5)
       }
-    }, 2200)
+    }, 2700)
   }
 
   const restart = () => {
