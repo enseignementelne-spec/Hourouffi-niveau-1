@@ -139,6 +139,14 @@ async function main() {
     { text: 'هَ.',  path: `${DIR}/ha_fatha.mp3` },
     { text: 'هِ.',  path: `${DIR}/ha_kasra.mp3` },
     { text: 'هُ.',  path: `${DIR}/ha_damma.mp3` },
+
+    // ── Mots avec sukūn (mode "Le Sukūn") ───────────────────
+    { text: 'نَعَمْ.',   path: `${DIR}/sukun_naam.mp3` },
+    { text: 'هَلْ.',    path: `${DIR}/sukun_hal.mp3` },
+    { text: 'مِنْ.',    path: `${DIR}/sukun_min.mp3` },
+    { text: 'قِفْ.',    path: `${DIR}/sukun_qif.mp3` },
+    { text: 'اِجْلِسْ.', path: `${DIR}/sukun_ijlis.mp3` },
+    { text: 'كِتَابْ.', path: `${DIR}/sukun_kitab.mp3` },
   ]
 
   console.log(`\n🚀 ${queue.length} fichiers audio syllabes à générer...\n`)

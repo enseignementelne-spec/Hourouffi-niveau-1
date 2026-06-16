@@ -9,12 +9,12 @@ export const voyelles = [
 
 // Sukūn — voyelle zéro (absence de voyelle) — reconnaissance visuelle uniquement
 export const sukunWords = [
-  { mot: 'نَعَمْ', translit: 'naʿam', fr: 'Oui',         lettreSukun: 'مْ', position: 'finale' },
-  { mot: 'هَلْ',  translit: 'hal',   fr: 'Est-ce que…', lettreSukun: 'لْ', position: 'finale' },
-  { mot: 'مِنْ',  translit: 'min',   fr: 'De / Parmi',  lettreSukun: 'نْ', position: 'finale' },
-  { mot: 'قِفْ',  translit: 'qif',   fr: 'Lève-toi',    lettreSukun: 'فْ', position: 'finale' },
-  { mot: 'اِجْلِسْ', translit: 'ijlis', fr: 'Assieds-toi', lettreSukun: 'سْ', position: 'finale' },
-  { mot: 'كِتَابْ', translit: 'kitāb', fr: 'Livre',       lettreSukun: 'بْ', position: 'finale' },
+  { mot: 'نَعَمْ', translit: 'naʿam', fr: 'Oui',         lettreSukun: 'مْ', position: 'finale', audio: 'audio/syllabes/sukun_naam.mp3'  },
+  { mot: 'هَلْ',  translit: 'hal',   fr: 'Est-ce que…', lettreSukun: 'لْ', position: 'finale', audio: 'audio/syllabes/sukun_hal.mp3'   },
+  { mot: 'مِنْ',  translit: 'min',   fr: 'De / Parmi',  lettreSukun: 'نْ', position: 'finale', audio: 'audio/syllabes/sukun_min.mp3'   },
+  { mot: 'قِفْ',  translit: 'qif',   fr: 'Lève-toi',    lettreSukun: 'فْ', position: 'finale', audio: 'audio/syllabes/sukun_qif.mp3'   },
+  { mot: 'اِجْلِسْ', translit: 'ijlis', fr: 'Assieds-toi', lettreSukun: 'سْ', position: 'finale', audio: 'audio/syllabes/sukun_ijlis.mp3' },
+  { mot: 'كِتَابْ', translit: 'kitāb', fr: 'Livre',       lettreSukun: 'بْ', position: 'finale', audio: 'audio/syllabes/sukun_kitab.mp3' },
 ]
 
 // Les 12 lettres prioritaires avec leurs syllabes

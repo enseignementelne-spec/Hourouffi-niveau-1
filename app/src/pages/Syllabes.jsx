@@ -235,7 +235,7 @@ export default function Syllabes() {
           </p>
         </div>
         <div className="flex justify-center">
-          <PremiumAudioPlayer url={null} fallbackText={word.mot} size="lg" />
+          <PremiumAudioPlayer key={word.audio} url={word.audio} fallbackText={word.mot} size="lg" autoPlay />
         </div>
         <button
           onClick={() => {
