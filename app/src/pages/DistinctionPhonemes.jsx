@@ -11,7 +11,7 @@ import { usePreloadAudios } from '../hooks/usePreloadAudios'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, RotateCcw, Trophy, Lock } from 'lucide-react'
-import { playSuccess, playError, playVictory, playPoints, playArabicFeedback } from '../utils/soundEffects'
+import { playSuccess, playError, playVictory, playPoints, playArabicFeedback, stopArabicFeedback } from '../utils/soundEffects'
 import { AuditingMetrics, estimateConfidence } from '../utils/auditingMetrics'
 
 export default function DistinctionPhonemes() {
@@ -128,6 +128,9 @@ export default function DistinctionPhonemes() {
     }
 
     setTimeout(() => {
+      // Coupe le feedback vocal ("أحسنت" / "حاول") avant de passer à la suite
+      // pour éviter qu'il ne se chevauche avec le son de la question suivante.
+      stopArabicFeedback()
       if (currentIndex + 1 >= orderedPhonemes.length) {
         setGameOver(true)
         playVictory()
@@ -138,7 +141,7 @@ export default function DistinctionPhonemes() {
         setIsCorrect(null)
         setTargetIsFirst(Math.random() > 0.5)
       }
-    }, 1800)
+    }, 2200)
   }
 
   const restart = () => {

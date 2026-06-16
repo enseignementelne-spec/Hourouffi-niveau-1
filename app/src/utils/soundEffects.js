@@ -42,6 +42,12 @@ export function playArabicFeedback(type = 'correct') {
   }
 }
 
+// Coupe le feedback vocal en cours — à appeler avant de déclencher un nouveau
+// son (ex: audio de la question suivante) pour éviter le chevauchement.
+export function stopArabicFeedback() {
+  if (feedbackAudio) { feedbackAudio.pause(); feedbackAudio.currentTime = 0 }
+}
+
 function getContext() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)()
