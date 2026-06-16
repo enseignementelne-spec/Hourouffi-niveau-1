@@ -63,6 +63,7 @@ export default function DistinctionPhonemes() {
   // Timing
   const sessionIdRef = useRef(`phon_${Date.now()}`)
   const questionStartRef = useRef(Date.now())
+  const questionAudioRef = useRef(null)
 
   // Session management
   useEffect(() => {
@@ -103,6 +104,10 @@ export default function DistinctionPhonemes() {
     const correct = isFirst === targetIsFirst
     setSelected(isFirst ? 'first' : 'second')
     setIsCorrect(correct)
+
+    // Coupe le son de la question s'il joue encore (l'enfant a repondu vite)
+    // pour qu'il ne se superpose pas au carillon / a la voix de feedback.
+    questionAudioRef.current?.stop()
 
     const responseTime = Date.now() - questionStartRef.current
     const difficulty = current.difficulte || 2
@@ -209,6 +214,7 @@ export default function DistinctionPhonemes() {
 
       <div className="flex justify-center mb-8">
         <PremiumAudioPlayer
+          ref={questionAudioRef}
           key={`${currentIndex}-${target.caractere}`}
           url={target.audio}
           fallbackText={target.caractere}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 import { Volume2, Loader2, AlertCircle, Play } from 'lucide-react'
 import { useRobustAudio, normalizeAudioPath } from '../../services/audioService'
 import { useAppStore } from '../../store/useAppStore'
@@ -7,10 +7,14 @@ import { useAppStore } from '../../store/useAppStore'
  * Composant Audio Premium avec gestion d'états (Loading, Error, Playing)
  * Inspiré par les recommandations de bonnes pratiques pédagogiques.
  */
-export default function PremiumAudioPlayer({ url, fallbackText, size = 'md', className = '', autoPlay = false }) {
+const PremiumAudioPlayer = forwardRef(function PremiumAudioPlayer({ url, fallbackText, size = 'md', className = '', autoPlay = false }, ref) {
   const [fullUrl, setFullUrl] = useState(url)
   const { status, play, stop } = useRobustAudio(fullUrl, fallbackText)
   const soundEnabled = useAppStore((s) => s.soundEnabled)
+
+  // Permet au parent d'arreter cet audio (ex: si l'utilisateur repond avant
+  // la fin de la lecture, pour eviter qu'elle ne se superpose au feedback).
+  useImperativeHandle(ref, () => ({ stop }), [stop])
 
   useEffect(() => {
     if (url) {
@@ -103,4 +107,6 @@ export default function PremiumAudioPlayer({ url, fallbackText, size = 'md', cla
       )}
     </div>
   )
-}
+})
+
+export default PremiumAudioPlayer
