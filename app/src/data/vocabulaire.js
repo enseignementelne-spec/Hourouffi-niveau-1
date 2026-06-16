@@ -85,9 +85,9 @@ const rawCategories = [
   {
     id: 'emotions', nom: 'Les émotions', nomAr: 'المَشَاعِر', emoji: '😊',
     mots: [
-      { fr: 'Content',    ar: 'سَعِيد',  translit: "Sa'īd"  },
-      { fr: 'Triste',     ar: 'حَزِين',  translit: 'Ḥazīn'  },
-      { fr: 'En colère',  ar: 'غَاضِب',  translit: 'Ghāḍib' },
+      { fr: 'Content',    ar: 'سَعِيد',  translit: "Sa'īd",  pictogramme: '😊' },
+      { fr: 'Triste',     ar: 'حَزِين',  translit: 'Ḥazīn',  pictogramme: '😢' },
+      { fr: 'En colère',  ar: 'غَاضِب',  translit: 'Ghāḍib', pictogramme: '😠' },
     ]
   },
   {

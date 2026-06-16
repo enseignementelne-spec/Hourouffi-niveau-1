@@ -134,10 +134,14 @@ export default function FlashcardsVocabulaire() {
               }}
             />
           ) : selectedCat.id === 'couleurs' && mot.hex ? (
-            <div 
-              className="w-full max-w-xs h-44 rounded-2xl mb-6 shadow-inner border border-slate-200 dark:border-slate-700" 
-              style={{ backgroundColor: mot.hex }} 
+            <div
+              className="w-full max-w-xs h-44 rounded-2xl mb-6 shadow-inner border border-slate-200 dark:border-slate-700"
+              style={{ backgroundColor: mot.hex }}
             />
+          ) : selectedCat.id === 'emotions' && mot.pictogramme ? (
+            <div className="w-full max-w-xs h-44 rounded-2xl mb-6 bg-gradient-to-br from-amber-50 to-rose-50 dark:from-slate-700 dark:to-slate-700 border border-slate-100 dark:border-slate-600 flex items-center justify-center">
+              <span className="text-8xl">{mot.pictogramme}</span>
+            </div>
           ) : selectedCat.id !== 'nombres' && (
             <img
               src={fallbackImage}
