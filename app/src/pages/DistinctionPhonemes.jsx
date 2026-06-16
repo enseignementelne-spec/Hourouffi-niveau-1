@@ -108,10 +108,10 @@ export default function DistinctionPhonemes() {
       setShowConfetti(true)
       addPoints(30)
       addResult(activeProfile.id, { type: 'phonemes', correct: true, phonemeId: current.id })
+      // Sons échelonnés (et non simultanés) : carillon → points → voix
       playSuccess()
-      playPoints()
-      // Léger délai pour que la voix démarre après le carillon, pas en même temps
-      setTimeout(() => playArabicFeedback('correct'), 400)
+      setTimeout(() => playPoints(), 150)
+      setTimeout(() => playArabicFeedback('correct'), 450)
       AuditingMetrics.track({
         module: 'phonemes', type: 'correct', component: 'DistinctionPhonemes',
         profileId: activeProfile.id, profileName: activeProfile.prenom,
