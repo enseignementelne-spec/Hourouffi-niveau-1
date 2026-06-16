@@ -24,7 +24,7 @@ export const conversations = [
         questionFr: 'Que la paix soit sur vous !',
         questionAudio: 'resources/audio/conversations/salut_1.mp3',
         options: [
-          { text: 'وَعَلَيْكُمُ السَّلَام', textFr: 'Et sur vous la paix', correct: true },
+          { text: 'وَعَلَيْكُمُ السَّلَام', textFr: 'Et sur vous la paix', correct: true, audio: 'resources/audio/conversations/salut_1_reponse.mp3' },
           { text: 'شُكْرًا',               textFr: 'Merci',               correct: false },
         ]
       },
@@ -33,7 +33,7 @@ export const conversations = [
         questionFr: 'Bonjour (matin) !',
         questionAudio: 'resources/audio/conversations/matin_1.mp3',
         options: [
-          { text: 'صَبَاحُ النُّور',   textFr: 'Bonjour (réponse)',  correct: true },
+          { text: 'صَبَاحُ النُّور',   textFr: 'Bonjour (réponse)',  correct: true, audio: 'resources/audio/conversations/matin_1_reponse.mp3' },
           { text: 'مَسَاءُ الخَيْر',   textFr: 'Bonsoir',            correct: false },
         ]
       },
@@ -42,7 +42,7 @@ export const conversations = [
         questionFr: 'Bonsoir !',
         questionAudio: 'resources/audio/conversations/masaa_1.mp3',
         options: [
-          { text: 'مَسَاءُ النُّور',   textFr: 'Bonsoir (réponse)',  correct: true },
+          { text: 'مَسَاءُ النُّور',   textFr: 'Bonsoir (réponse)',  correct: true, audio: 'resources/audio/conversations/masaa_1_reponse.mp3' },
           { text: 'صَبَاحُ النُّور',   textFr: 'Bonjour (réponse)',  correct: false },
         ]
       },

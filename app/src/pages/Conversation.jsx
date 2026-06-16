@@ -11,7 +11,17 @@ import ConfettiOverlay from '../components/ui/ConfettiOverlay'
 import { playSuccess, playError, playVictory, playPoints } from '../utils/soundEffects'
 import { AuditingMetrics, calculateDifficulty, estimateConfidence } from '../utils/auditingMetrics'
 import PremiumAudioPlayer from '../components/ui/PremiumAudioPlayer'
-import { speakTTS } from '../services/audioService'
+import { speakTTS, normalizeAudioPath } from '../services/audioService'
+
+function playOptionAudio(option) {
+  if (!option.audio) { speakTTS(option.text); return }
+  const audio = new Audio(import.meta.env.BASE_URL + normalizeAudioPath(option.audio).replace(/^\//, ''))
+  let fallbackUsed = false
+  const fallback = () => { if (!fallbackUsed) { fallbackUsed = true; speakTTS(option.text) } }
+  audio.onerror = fallback
+  const p = audio.play()
+  if (p) p.catch(fallback)
+}
 
 export default function Conversation() {
   const activeProfile = useProfileStore(s => s.getActiveProfile())
@@ -83,7 +93,7 @@ export default function Conversation() {
       playSuccess()
 
       // Lire la bonne réponse à voix haute après le son de succès
-      setTimeout(() => speakTTS(option.text), 400)
+      setTimeout(() => playOptionAudio(option), 400)
 
       AuditingMetrics.track({
         module: 'conversation',
