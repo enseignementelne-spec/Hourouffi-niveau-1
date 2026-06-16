@@ -14,6 +14,16 @@ import { ArrowLeft, RotateCcw, Trophy, Lock } from 'lucide-react'
 import { playSuccess, playError, playVictory, playPoints, playArabicFeedback, stopArabicFeedback } from '../utils/soundEffects'
 import { AuditingMetrics, estimateConfidence } from '../utils/auditingMetrics'
 
+function buildOrderedPhonemes(availablePhonemes, srsItems, srsSessionCount) {
+  if (availablePhonemes.length === 0) return []
+  const keys = availablePhonemes.map(p => `phoneme_${p.id}`)
+  const priorityKeys = selectItemsForReview(keys, srsItems, availablePhonemes.length, srsSessionCount)
+  return priorityKeys.map(key => {
+    const id = parseInt(key.replace('phoneme_', ''))
+    return availablePhonemes.find(p => p.id === id)
+  }).filter(Boolean)
+}
+
 export default function DistinctionPhonemes() {
   const activeProfile = useProfileStore(s => s.getActiveProfile())
   const addPoints = useProfileStore(s => s.addPoints)
@@ -27,16 +37,14 @@ export default function DistinctionPhonemes() {
   const currentLevel = getCurrentLevel(srsItems)
   const availablePhonemes = useMemo(() => getAvailablePhonemes(currentLevel), [currentLevel])
 
-  // Build ordered list using SRS priority
-  const orderedPhonemes = useMemo(() => {
-    if (availablePhonemes.length === 0) return []
-    const keys = availablePhonemes.map(p => `phoneme_${p.id}`)
-    const priorityKeys = selectItemsForReview(keys, srsItems, availablePhonemes.length, srsSessionCount)
-    return priorityKeys.map(key => {
-      const id = parseInt(key.replace('phoneme_', ''))
-      return availablePhonemes.find(p => p.id === id)
-    }).filter(Boolean)
-  }, [availablePhonemes, srsItems, srsSessionCount])
+  // Liste figée pour la session : construite une seule fois (puis sur restart()),
+  // jamais recalculée en cours de partie. Sinon srsRecordAnswer() (appelé au tout
+  // début de handleAnswer) change srsItems -> reordonne la liste -> "current" peut
+  // pointer vers un AUTRE phonème en plein round -> son de la question rejoué
+  // immédiatement, juste après le carillon de succès/erreur (chevauchement audio).
+  const [orderedPhonemes, setOrderedPhonemes] = useState(() =>
+    buildOrderedPhonemes(availablePhonemes, srsItems, srsSessionCount)
+  )
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [score, setScore] = useState(0)
@@ -108,10 +116,9 @@ export default function DistinctionPhonemes() {
       setShowConfetti(true)
       addPoints(30)
       addResult(activeProfile.id, { type: 'phonemes', correct: true, phonemeId: current.id })
-      // Sons échelonnés (et non simultanés) : carillon → points → voix
       playSuccess()
-      setTimeout(() => playPoints(), 150)
-      setTimeout(() => playArabicFeedback('correct'), 450)
+      setTimeout(() => playPoints(), 350)
+      setTimeout(() => playArabicFeedback('correct'), 700)
       AuditingMetrics.track({
         module: 'phonemes', type: 'correct', component: 'DistinctionPhonemes',
         profileId: activeProfile.id, profileName: activeProfile.prenom,
@@ -120,7 +127,7 @@ export default function DistinctionPhonemes() {
     } else {
       addResult(activeProfile.id, { type: 'phonemes', correct: false, phonemeId: current.id })
       playError()
-      setTimeout(() => playArabicFeedback('retry'), 400)
+      setTimeout(() => playArabicFeedback('retry'), 700)
       AuditingMetrics.track({
         module: 'phonemes', type: 'error', component: 'DistinctionPhonemes',
         profileId: activeProfile.id, profileName: activeProfile.prenom,
@@ -142,10 +149,11 @@ export default function DistinctionPhonemes() {
         setIsCorrect(null)
         setTargetIsFirst(Math.random() > 0.5)
       }
-    }, 2700)
+    }, 3200)
   }
 
   const restart = () => {
+    setOrderedPhonemes(buildOrderedPhonemes(availablePhonemes, srsItems, srsSessionCount))
     setCurrentIndex(0)
     setScore(0)
     setSelected(null)
