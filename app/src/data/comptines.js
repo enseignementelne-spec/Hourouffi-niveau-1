@@ -28,13 +28,13 @@ export const comptines = [
     color: 'from-blue-400 to-indigo-500',
     youtube: 'ehEoHHcgp5E',
     lignes: [
-      { ar: 'وَاحِد، اِثْنَان، ثَلَاثَة',           fr: 'Un, deux, trois',               emoji: '1️⃣2️⃣3️⃣' },
-      { ar: 'أَرْبَعَة، خَمْسَة، سِتَّة',           fr: 'Quatre, cinq, six',             emoji: '4️⃣5️⃣6️⃣' },
-      { ar: 'سَبْعَة، ثَمَانِيَة، تِسْعَة',         fr: 'Sept, huit, neuf',              emoji: '7️⃣8️⃣9️⃣' },
-      { ar: 'وَعَشَرَة! هَيَّا نَعُدّ مَعًا',       fr: 'Et dix ! Comptons ensemble',    emoji: '🔟' },
-      { ar: 'وَاحِد — اِثْنَان — ثَلَاثَة — أَرْبَعَة', fr: 'Un — deux — trois — quatre', emoji: '👏' },
-      { ar: 'خَمْسَة — سِتَّة — سَبْعَة — ثَمَانِيَة', fr: 'Cinq — six — sept — huit',  emoji: '👐' },
-      { ar: 'تِسْعَة — عَشَرَة — أَحْسَنْتَ',      fr: 'Neuf — dix — Bravo !',         emoji: '🎉' },
+      { ar: 'وَاحِد، اِثْنَان، ثَلَاثَة',           fr: 'Un, deux, trois',               emoji: '1️⃣2️⃣3️⃣', audio: 'audio/comptines/nombres/nombres_1.mp3' },
+      { ar: 'أَرْبَعَة، خَمْسَة، سِتَّة',           fr: 'Quatre, cinq, six',             emoji: '4️⃣5️⃣6️⃣', audio: 'audio/comptines/nombres/nombres_2.mp3' },
+      { ar: 'سَبْعَة، ثَمَانِيَة، تِسْعَة',         fr: 'Sept, huit, neuf',              emoji: '7️⃣8️⃣9️⃣', audio: 'audio/comptines/nombres/nombres_3.mp3' },
+      { ar: 'وَعَشَرَة! هَيَّا نَعُدَّ مَعًا',      fr: 'Et dix ! Comptons ensemble',    emoji: '🔟',       audio: 'audio/comptines/nombres/nombres_4.mp3' },
+      { ar: 'وَاحِد — اِثْنَان — ثَلَاثَة — أَرْبَعَة', fr: 'Un — deux — trois — quatre', emoji: '👏',  audio: 'audio/comptines/nombres/nombres_5.mp3' },
+      { ar: 'خَمْسَة — سِتَّة — سَبْعَة — ثَمَانِيَة', fr: 'Cinq — six — sept — huit',  emoji: '👐',  audio: 'audio/comptines/nombres/nombres_6.mp3' },
+      { ar: 'تِسْعَة — عَشَرَة — أَحْسَنْتَ',      fr: 'Neuf — dix — Bravo !',         emoji: '🎉',       audio: 'audio/comptines/nombres/nombres_7.mp3' },
     ]
   },
   {
@@ -46,13 +46,13 @@ export const comptines = [
     youtube: 'tlrhDXVJfwI',
     youtubePortrait: true,
     lignes: [
-      { ar: 'قِطٌّ صَغِير يَقُول مِيَاو',          fr: 'Petit chat dit miaou',           emoji: '🐱' },
-      { ar: 'كَلْبٌ وَفِيٌّ يَقُول هَاو',          fr: 'Chien fidèle dit ouaf',          emoji: '🐶' },
-      { ar: 'طَائِرٌ يَغْنِي فِي السَّمَاء',        fr: 'L\'oiseau chante dans le ciel', emoji: '🐦' },
-      { ar: 'سَمَكٌ يَسْبَحُ فِي المَاء',           fr: 'Le poisson nage dans l\'eau',   emoji: '🐟' },
-      { ar: 'أَرْنَبٌ يَقْفِزُ هُنَا وَهُنَاك',     fr: 'Le lapin saute par-ci par-là', emoji: '🐰' },
-      { ar: 'دَجَاجَةٌ تَبْحَثُ عَنِ الطَّعَام',   fr: 'La poule cherche à manger',     emoji: '🐔' },
-      { ar: 'أُحِبُّ الحَيَوَانَات جَمِيعًا',       fr: 'J\'aime tous les animaux !',    emoji: '❤️' },
+      { ar: 'قِطٌّ صَغِير يَقُول مِيَاو',          fr: 'Petit chat dit miaou',           emoji: '🐱', audio: 'audio/comptines/animaux/animaux_1.mp3' },
+      { ar: 'كَلْبٌ وَفِيٌّ يَقُول هَاو',          fr: 'Chien fidèle dit ouaf',          emoji: '🐶', audio: 'audio/comptines/animaux/animaux_2.mp3' },
+      { ar: 'طَائِرٌ يَغْنِي فِي السَّمَاء',        fr: 'L\'oiseau chante dans le ciel', emoji: '🐦', audio: 'audio/comptines/animaux/animaux_3.mp3' },
+      { ar: 'سَمَكٌ يَسْبَحُ فِي المَاء',           fr: 'Le poisson nage dans l\'eau',   emoji: '🐟', audio: 'audio/comptines/animaux/animaux_4.mp3' },
+      { ar: 'أَرْنَبٌ يَقْفِزُ هُنَا وَهُنَاك',     fr: 'Le lapin saute par-ci par-là', emoji: '🐰', audio: 'audio/comptines/animaux/animaux_5.mp3' },
+      { ar: 'دَجَاجَةٌ تَبْحَثُ عَنِ الطَّعَام',   fr: 'La poule cherche à manger',     emoji: '🐔', audio: 'audio/comptines/animaux/animaux_6.mp3' },
+      { ar: 'أُحِبُّ الحَيَوَانَات جَمِيعًا',       fr: 'J\'aime tous les animaux !',    emoji: '❤️', audio: 'audio/comptines/animaux/animaux_7.mp3' },
     ]
   },
 ]
