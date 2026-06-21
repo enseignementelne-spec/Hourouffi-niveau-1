@@ -26,6 +26,7 @@ export const comptines = [
     titreFr: 'La comptine des nombres',
     emoji: '🔢',
     color: 'from-blue-400 to-indigo-500',
+    youtube: 'ehEoHHcgp5E',
     lignes: [
       { ar: 'وَاحِد، اِثْنَان، ثَلَاثَة',           fr: 'Un, deux, trois',               emoji: '1️⃣2️⃣3️⃣' },
       { ar: 'أَرْبَعَة، خَمْسَة، سِتَّة',           fr: 'Quatre, cinq, six',             emoji: '4️⃣5️⃣6️⃣' },
