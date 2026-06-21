@@ -8,6 +8,7 @@ export const comptines = [
     titreFr: 'La comptine des couleurs',
     emoji: '🎨',
     color: 'from-pink-400 to-rose-500',
+    youtube: 'AdQCja4MBcY',
     lignes: [
       { ar: 'أَحْمَرُ كَالتُّفَّاحَة',   fr: 'Rouge comme la pomme',       emoji: '🍎' },
       { ar: 'أَزْرَقُ كَالسَّمَاء',      fr: 'Bleu comme le ciel',          emoji: '☁️' },
