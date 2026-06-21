@@ -22,10 +22,13 @@ function chunk(arr, size) {
 }
 
 const MODES = [
-  { id: 'auto',   label: 'Auto — défilement',    emoji: '▶️', desc: "Les lettres défilent automatiquement avec l'audio" },
-  { id: 'manuel', label: 'Manuel — lettre par lettre', emoji: '👆', desc: 'Clique sur chaque lettre pour l\'entendre' },
-  { id: 'quiz',   label: 'Quiz — Quelle lettre ?', emoji: '❓', desc: 'Écoute et retrouve la lettre dans l\'alphabet' },
+  { id: 'auto',    label: 'Auto — défilement',       emoji: '▶️', desc: "Les lettres défilent automatiquement avec l'audio" },
+  { id: 'manuel',  label: 'Manuel — lettre par lettre', emoji: '👆', desc: "Clique sur chaque lettre pour l'entendre" },
+  { id: 'quiz',    label: 'Quiz — Quelle lettre ?',  emoji: '❓', desc: "Écoute et retrouve la lettre dans l'alphabet" },
+  { id: 'chanson', label: 'Chanson — vidéo complète', emoji: '🎬', desc: "Regarde et écoute la chanson de l'alphabet (vitesse 0.75×)" },
 ]
+
+const YT_VIDEO_ID = 'ZnnPhPAWxg4'
 
 export default function ChansonAlphabet() {
   const soundEnabled = useAppStore(s => s.soundEnabled)
@@ -39,8 +42,43 @@ export default function ChansonAlphabet() {
   const [quizScore, setQuizScore] = useState(0)
   const [quizOver, setQuizOver] = useState(false)
 
-  const audioRef = useRef(null)
-  const timerRef = useRef(null)
+  const audioRef   = useRef(null)
+  const timerRef   = useRef(null)
+  const ytPlayerRef = useRef(null)
+
+  useEffect(() => {
+    if (mode !== 'chanson') return
+
+    const initPlayer = () => {
+      if (ytPlayerRef.current) return
+      ytPlayerRef.current = new window.YT.Player('yt-chanson-player', {
+        videoId: YT_VIDEO_ID,
+        width: '100%',
+        playerVars: { autoplay: 0, rel: 0, modestbranding: 1 },
+        events: {
+          onReady: (e) => e.target.setPlaybackRate(0.75),
+        },
+      })
+    }
+
+    if (window.YT && window.YT.Player) {
+      initPlayer()
+    } else {
+      window.onYouTubeIframeAPIReady = initPlayer
+      if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+        const tag = document.createElement('script')
+        tag.src = 'https://www.youtube.com/iframe_api'
+        document.head.appendChild(tag)
+      }
+    }
+
+    return () => {
+      if (ytPlayerRef.current) {
+        ytPlayerRef.current.destroy()
+        ytPlayerRef.current = null
+      }
+    }
+  }, [mode])
 
   const playLetter = useCallback((idx) => {
     if (!soundEnabled) return
@@ -128,7 +166,7 @@ export default function ChansonAlphabet() {
         <div className="space-y-3">
           {MODES.map((m, i) => (
             <motion.button key={m.id}
-              onClick={() => m.id === 'quiz' ? startQuiz() : (setMode(m.id), m.id === 'auto' && startAuto())}
+              onClick={() => m.id === 'quiz' ? startQuiz() : m.id === 'auto' ? (setMode(m.id), startAuto()) : setMode(m.id)}
               className="w-full bg-white dark:bg-slate-800 rounded-2xl card-shadow border border-slate-100 dark:border-slate-700 p-4 text-left hover:border-brand-300 transition-all flex items-center gap-4"
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
               <span className="text-3xl">{m.emoji}</span>
@@ -313,6 +351,27 @@ export default function ChansonAlphabet() {
             )
           })}
         </div>
+      </div>
+    )
+  }
+
+  // --- Mode CHANSON ---
+  if (mode === 'chanson') {
+    return (
+      <div className="max-w-2xl mx-auto py-4">
+        <button onClick={() => setMode(null)}
+          className="flex items-center gap-1.5 text-slate-400 hover:text-brand-600 font-bold text-sm mb-6">
+          <ArrowLeft className="h-4 w-4" /> رجوع
+        </button>
+        <h2 className="text-center font-arabic text-2xl text-brand-700 dark:text-brand-300 font-bold mb-4" dir="rtl">
+          أُنْشُودَةُ الأَبْجَدِيَّة
+        </h2>
+        <div className="rounded-2xl overflow-hidden shadow-xl border border-slate-100 dark:border-slate-700 aspect-video">
+          <div id="yt-chanson-player" className="w-full h-full" />
+        </div>
+        <p className="text-center text-xs text-slate-400 font-bold mt-3">
+          Vitesse : 0.75× — adaptée pour les enfants
+        </p>
       </div>
     )
   }
