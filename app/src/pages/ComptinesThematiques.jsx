@@ -18,8 +18,9 @@ export default function ComptinesThematiques() {
   const [playing, setPlaying] = useState(false)
   const [done, setDone] = useState(false)
   const [view, setView] = useState('paroles')       // 'paroles' | 'video'
-  const timerRef = useRef(null)
-  const ytPlayerRef = useRef(null)
+  const timerRef       = useRef(null)
+  const ytPlayerRef    = useRef(null)
+  const currentAudioRef = useRef(null)
 
   useEffect(() => {
     if (view !== 'video' || !selected?.youtube) return
@@ -65,8 +66,10 @@ export default function ComptinesThematiques() {
   const BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '')
 
   const playLineAudio = (line) => {
+    if (currentAudioRef.current) { currentAudioRef.current.pause(); currentAudioRef.current = null }
     if (line.audio) {
       const audio = new Audio(`${BASE}/${line.audio}`)
+      currentAudioRef.current = audio
       audio.onerror = () => speakTTS(line.ar)
       audio.play().catch(() => speakTTS(line.ar))
       return audio
@@ -108,7 +111,15 @@ export default function ComptinesThematiques() {
 
   const stopAll = () => {
     clearTimeout(timerRef.current)
+    if (currentAudioRef.current) { currentAudioRef.current.pause(); currentAudioRef.current = null }
     setPlaying(false)
+  }
+
+  const handleBack = () => {
+    stopAll()
+    if (ytPlayerRef.current) { ytPlayerRef.current.destroy(); ytPlayerRef.current = null }
+    setSelected(null)
+    setView('paroles')
   }
 
   // Écran de sélection
@@ -150,7 +161,7 @@ export default function ComptinesThematiques() {
   return (
     <div className="max-w-lg mx-auto py-6">
       <div className="flex items-center justify-between mb-6">
-        <button onClick={() => setSelected(null)} className="flex items-center gap-1.5 text-slate-400 hover:text-brand-600 font-bold text-sm">
+        <button onClick={handleBack} className="flex items-center gap-1.5 text-slate-400 hover:text-brand-600 font-bold text-sm">
           <ArrowLeft className="h-4 w-4" /> الأَنَاشِيد
         </button>
         <span className="text-2xl">{selected.emoji}</span>
