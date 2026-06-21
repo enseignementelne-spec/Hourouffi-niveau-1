@@ -166,7 +166,7 @@ export default function ComptinesThematiques() {
 
       {/* Lecteur YouTube */}
       {view === 'video' && selected.youtube && (
-        <div className="rounded-2xl overflow-hidden shadow-xl border border-slate-100 dark:border-slate-700 aspect-video mb-6">
+        <div className={`rounded-2xl overflow-hidden shadow-xl border border-slate-100 dark:border-slate-700 mb-6 ${selected.youtubePortrait ? 'max-w-xs mx-auto aspect-[9/16]' : 'aspect-video'}`}>
           <div id="yt-comptine-player" className="w-full h-full" />
         </div>
       )}

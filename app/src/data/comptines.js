@@ -43,6 +43,8 @@ export const comptines = [
     titreFr: 'La comptine des animaux',
     emoji: '🐾',
     color: 'from-emerald-400 to-teal-500',
+    youtube: 'tlrhDXVJfwI',
+    youtubePortrait: true,
     lignes: [
       { ar: 'قِطٌّ صَغِير يَقُول مِيَاو',          fr: 'Petit chat dit miaou',           emoji: '🐱' },
       { ar: 'كَلْبٌ وَفِيٌّ يَقُول هَاو',          fr: 'Chien fidèle dit ouaf',          emoji: '🐶' },
