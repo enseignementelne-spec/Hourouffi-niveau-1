@@ -62,9 +62,20 @@ export default function ComptinesThematiques() {
     setView('paroles')
   }
 
-  const playLine = (line) => {
+  const BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '')
+
+  const playLineAudio = (line) => {
+    if (line.audio) {
+      const audio = new Audio(`${BASE}/${line.audio}`)
+      audio.onerror = () => speakTTS(line.ar)
+      audio.play().catch(() => speakTTS(line.ar))
+      return audio
+    }
     speakTTS(line.ar)
+    return null
   }
+
+  const playLine = (line) => { playLineAudio(line) }
 
   const playAll = () => {
     if (playing) return
@@ -83,9 +94,14 @@ export default function ComptinesThematiques() {
         return
       }
       setLineIndex(i)
-      speakTTS(lines[i].ar)
+      const audio = playLineAudio(lines[i])
       i++
-      timerRef.current = setTimeout(next, 2800)
+      if (audio) {
+        audio.onended = next
+        audio.onerror = () => { timerRef.current = setTimeout(next, 2800) }
+      } else {
+        timerRef.current = setTimeout(next, 2800)
+      }
     }
     next()
   }
