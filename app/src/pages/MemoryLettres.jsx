@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { useProfileStore } from '../store/useProfileStore'
 import { useGameStore } from '../store/useGameStore'
 import { useSRSStore } from '../store/useSRSStore'
 import { getAvailableLetters, getCurrentLevel, getMemoryPairs } from '../data/curriculum'
 import ConfettiOverlay from '../components/ui/ConfettiOverlay'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, RotateCcw, Trophy } from 'lucide-react'
 import { playTap, playSuccess, playVictory, playPoints } from '../utils/soundEffects'
 import { AuditingMetrics } from '../utils/auditingMetrics'
+import { normalizeAudioPath, speakTTS } from '../services/audioService'
+import { useAppStore } from '../store/useAppStore'
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
 
@@ -26,6 +28,8 @@ export default function MemoryLettres() {
   const [gameOver, setGameOver] = useState(false)
   const [timer, setTimer] = useState(0)
   const [timerActive, setTimerActive] = useState(false)
+  const [revealedLetter, setRevealedLetter] = useState(null)
+  const revealTimeoutRef = useRef(null)
 
   const currentLevel = getCurrentLevel(srsItems)
   const memoryPairsCount = getMemoryPairs(currentLevel)
@@ -44,6 +48,7 @@ export default function MemoryLettres() {
     setGameOver(false)
     setTimer(0)
     setTimerActive(true)
+    setRevealedLetter(null)
   }, [])
 
   useEffect(() => { initGame() }, [initGame])
@@ -73,6 +78,20 @@ export default function MemoryLettres() {
         setMatched(newMatched)
         setFlipped([])
         playSuccess()
+
+        // Reveal motExemple for the matched letter
+        const matchedLettre = availableLetters.find(l => l.id === cards[a].lettreId)
+        if (matchedLettre) {
+          if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current)
+          setRevealedLetter(matchedLettre)
+          if (useAppStore.getState().soundEnabled) {
+            const audio = new Audio(normalizeAudioPath(matchedLettre.audio))
+            audio.volume = 0.7
+            audio.play().catch(() => speakTTS(matchedLettre.tts || matchedLettre.lettre))
+          }
+          revealTimeoutRef.current = setTimeout(() => setRevealedLetter(null), 2200)
+        }
+
         if (newMatched.length === memoryPairsCount) {
           setTimerActive(false)
           setShowConfetti(true)
@@ -163,6 +182,32 @@ export default function MemoryLettres() {
       <p className="text-center text-sm text-slate-400 font-medium mt-4">
         {matched.length}/{memoryPairsCount} أزواج مكتشفة
       </p>
+
+      <AnimatePresence>
+        {revealedLetter && (
+          <motion.div
+            initial={{ opacity: 0, y: 12, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.95 }}
+            className="mt-4 flex items-center gap-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl"
+          >
+            <span className="font-arabic text-5xl font-black" style={{ color: revealedLetter.color }}>{revealedLetter.lettre}</span>
+            <div className="flex-1">
+              <p className="font-arabic text-sm font-bold text-emerald-700 dark:text-emerald-300" dir="rtl">{revealedLetter.nom}</p>
+              {revealedLetter.motExemple && (
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xl">{revealedLetter.motExemple.emoji}</span>
+                  <div>
+                    <span className="font-arabic text-base font-bold text-slate-700 dark:text-slate-200" dir="rtl">{revealedLetter.motExemple.ar}</span>
+                    <span className="text-xs text-slate-400 font-medium ml-2">{revealedLetter.motExemple.translit} — {revealedLetter.motExemple.fr}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            <span className="text-emerald-500 text-lg">✅</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

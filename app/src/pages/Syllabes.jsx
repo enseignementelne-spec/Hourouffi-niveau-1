@@ -12,6 +12,8 @@ import { ArrowLeft, RotateCcw, Trophy, ChevronRight } from 'lucide-react'
 import { playSuccess, playError, playVictory, playPoints, playArabicFeedback } from '../utils/soundEffects'
 import MicButton from '../components/ui/MicButton'
 import { arabicMatches } from '../services/googleSttService'
+import { normalizeAudioPath, speakTTS } from '../services/audioService'
+import { useAppStore } from '../store/useAppStore'
 
 const POINTS_PER_CORRECT = 20
 const COLORS = { fatha: '#f97316', kasra: '#3b82f6', damma: '#22c55e' }
@@ -108,11 +110,18 @@ export default function Syllabes() {
     } else {
       addResult(activeProfile.id, { type: 'syllabes', correct: false })
       playError(); playArabicFeedback('retry')
+      const correctSyl = current.correct
+      setTimeout(() => {
+        if (!useAppStore.getState().soundEnabled) return
+        const a = new Audio(normalizeAudioPath(correctSyl.audio))
+        a.volume = 0.85
+        a.play().catch(() => speakTTS(correctSyl.tts || correctSyl.syllabe))
+      }, 800)
     }
     setTimeout(() => {
       if (qIndex + 1 >= questions.length) { setGameOver(true); playVictory() }
       else { setQIndex(q => q + 1); setSelected(null); setIsCorrect(null); setSelectedVoyelle(null) }
-    }, 1400)
+    }, 1900)
   }
 
   // --- Écran de sélection du mode ---
@@ -416,10 +425,16 @@ export default function Syllabes() {
           {/* Feedback */}
           {selected !== null && mode !== 'lecture' && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className={`mt-6 p-3 rounded-xl font-bold text-sm text-center ${isCorrect ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
-              {isCorrect
-                ? `✅ رائع! — ${current.correct.syllabe} (${current.correct.son})`
-                : `❌ الصواب: ${current.correct.syllabe} — ${current.correct.son}`}
+              className={`mt-6 p-4 rounded-xl font-bold text-sm text-center ${isCorrect ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+              {isCorrect ? (
+                <span>✅ <span className="font-arabic text-base">{current.correct.syllabe}</span> — « {current.correct.son} » رَائِع!</span>
+              ) : (
+                <div className="space-y-1">
+                  <p>❌ الصواب :</p>
+                  <p className="font-arabic text-4xl" style={{ color: COLORS[current.correct.voyelle] }}>{current.correct.syllabe}</p>
+                  <p className="text-xs">« {current.correct.son} » — réécoute 🔊</p>
+                </div>
+              )}
             </motion.div>
           )}
         </motion.div>

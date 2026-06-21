@@ -15,8 +15,19 @@ import { playSuccess, playError, playVictory, playPoints, playArabicFeedback } f
 import { AuditingMetrics, estimateConfidence, calculateDifficulty } from '../utils/auditingMetrics'
 import MicButton from '../components/ui/MicButton'
 import { arabicMatches } from '../services/googleSttService'
+import { normalizeAudioPath, speakTTS } from '../services/audioService'
+import { useAppStore } from '../store/useAppStore'
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
+
+const ENCOURAGEMENTS = [
+  { ar: 'رَائِع!',   fr: 'Formidable !' },
+  { ar: 'مُمْتَاز!', fr: 'Excellent !'   },
+  { ar: 'أَحْسَنْتَ!', fr: 'Bravo !'    },
+  { ar: 'شَاطِر!',   fr: 'Tu es fort(e) !' },
+  { ar: 'جَمِيل!',   fr: 'Super !'      },
+  { ar: 'نَجَحْتَ!', fr: 'Réussi !'     },
+]
 
 const TOTAL_QUESTIONS = 12
 const POINTS_PER_CORRECT = 25
@@ -37,9 +48,11 @@ export default function EcouteReconnaissance() {
   const [showConfetti, setShowConfetti] = useState(false)
   const [gameOver, setGameOver] = useState(false)
   const [questions, setQuestions] = useState([])
+  const [missedLetters, setMissedLetters] = useState([])
 
   // Timing
   const sessionIdRef = useRef(`ecoute_${Date.now()}`)
+  const encouragementRef = useRef(ENCOURAGEMENTS[0])
   const questionStartRef = useRef(Date.now())
 
   // Curriculum level
@@ -105,6 +118,7 @@ export default function EcouteReconnaissance() {
 
   const handleAnswer = (lettre) => {
     if (selected !== null) return
+    encouragementRef.current = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)]
     setSelected(lettre.id)
     const correct = lettre.id === current.correct.id
     setIsCorrect(correct)
@@ -138,6 +152,15 @@ export default function EcouteReconnaissance() {
       addResult(activeProfile.id, { type: 'ecoute', correct: false, lettreId: current.correct.id })
       playError()
       playArabicFeedback('retry')
+      setMissedLetters(prev => prev.includes(current.correct.id) ? prev : [...prev, current.correct.id])
+      // Rejouer l'audio de la bonne lettre après le feedback visuel (ancrage son↔forme)
+      const correctLettre = current.correct
+      setTimeout(() => {
+        if (!useAppStore.getState().soundEnabled) return
+        const replayAudio = new Audio(normalizeAudioPath(correctLettre.audio))
+        replayAudio.volume = 0.85
+        replayAudio.play().catch(() => speakTTS(correctLettre.tts || correctLettre.lettre))
+      }, 800)
       AuditingMetrics.track({
         module: 'ecoute', type: 'error', component: 'EcouteReconnaissance',
         profileId: activeProfile.id, profileName: activeProfile.prenom,
@@ -176,6 +199,7 @@ export default function EcouteReconnaissance() {
     setSelected(null)
     setIsCorrect(null)
     setGameOver(false)
+    setMissedLetters([])
     sessionIdRef.current = `ecoute_${Date.now()}`
     srsIncrementSession(activeProfile.id)
     AuditingMetrics.startSession(sessionIdRef.current, activeProfile.id, 'ecoute')
@@ -218,6 +242,37 @@ export default function EcouteReconnaissance() {
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-400"></span> جديد</span>
             </div>
           </div>
+
+          {/* Lettres à retravailler */}
+          {missedLetters.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+              <p className="text-xs font-bold text-rose-500 uppercase tracking-wider mb-3">لِنُعِيدَ التَّدَرُّب — À retravailler</p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {missedLetters.map(id => {
+                  const lettre = availableLetters.find(l => l.id === id)
+                  if (!lettre) return null
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => {
+                        if (!useAppStore.getState().soundEnabled) return
+                        const a = new Audio(normalizeAudioPath(lettre.audio))
+                        a.volume = 0.85
+                        a.play().catch(() => speakTTS(lettre.tts || lettre.lettre))
+                      }}
+                      title={`Écouter ${lettre.translit}`}
+                      className="flex flex-col items-center gap-0.5 px-3 py-2 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors min-w-[64px]"
+                    >
+                      <span className="font-arabic text-2xl" style={{ color: lettre.color }}>{lettre.lettre}</span>
+                      {lettre.motExemple && <span className="text-lg leading-none">{lettre.motExemple.emoji}</span>}
+                      <span className="text-[10px] text-slate-500 font-medium">{lettre.translit}</span>
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="text-[10px] text-slate-400 mt-2 text-center">Clique sur une lettre pour réécouter son son 🔊</p>
+            </div>
+          )}
         </div>
         <div className="flex gap-3 justify-center">
           <button onClick={restart} className="flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 transition-colors">
@@ -314,11 +369,22 @@ export default function EcouteReconnaissance() {
 
           {/* Feedback */}
           {selected !== null && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className={`mt-6 p-3 rounded-xl font-bold text-sm ${isCorrect ? 'bg-emerald-50 text-emerald-600' : 'bg-coral-50 text-coral-600'}`}
-            >
-              {isCorrect ? '✅ رائع! أَحْسَنْتَ!' : `❌ الإجابة الصحيحة: ${current.correct.translit} (${current.correct.lettre})`}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 space-y-2">
+              <div className={`p-3 rounded-xl font-bold text-sm ${isCorrect ? 'bg-emerald-50 text-emerald-600' : 'bg-coral-50 text-coral-600'}`}>
+                {isCorrect
+                  ? <span>✅ <span className="font-arabic text-base">{encouragementRef.current.ar}</span> — {encouragementRef.current.fr}</span>
+                  : <span>❌ الإجابة الصحيحة : <span className="font-arabic text-base">{current.correct.lettre}</span> — {current.correct.translit}</span>
+                }
+              </div>
+              {current.correct.motExemple && (
+                <div className="flex items-center justify-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 rounded-xl">
+                  <span className="text-3xl">{current.correct.motExemple.emoji}</span>
+                  <div dir="rtl" className="text-right">
+                    <p className="font-arabic text-xl font-bold text-brand-700 dark:text-brand-400 leading-none">{current.correct.motExemple.ar}</p>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">{current.correct.motExemple.translit} — {current.correct.motExemple.fr}</p>
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </motion.div>

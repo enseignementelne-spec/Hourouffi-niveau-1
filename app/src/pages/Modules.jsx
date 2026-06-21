@@ -3,7 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { useProfileStore } from '../store/useProfileStore'
 import { useGameStore } from '../store/useGameStore'
 import { useSRSStore } from '../store/useSRSStore'
-import { getCurrentLevel, CURRICULUM_LEVELS, calculateLevelMastery } from '../data/curriculum'
+import { getCurrentLevel, CURRICULUM_LEVELS, calculateLevelMastery, getAvailableLetterIds } from '../data/curriculum'
 import { motion } from 'framer-motion'
 import { Headphones, Grid3X3, Ear, PenTool, Layers, Star, MessageCircle, Music, BookOpen, ClipboardCheck, Clock, Flame, ChevronRight as ChevRight, Globe, Sparkles } from 'lucide-react'
 
@@ -51,9 +51,22 @@ export default function Modules() {
   const currentLevel = getCurrentLevel(srsItems)
   const levelInfo = CURRICULUM_LEVELS.find(l => l.id === currentLevel)
 
-  // Session recommandée du jour (change tous les 3 jours)
+  // Session personnalisée : si > 50% des lettres disponibles sont en box 1 ou non vues → révision ciblée
+  const availableLetterIds = getAvailableLetterIds(currentLevel)
+  const weakLetterCount = availableLetterIds.filter(id => {
+    const item = srsItems[`letter_${id}`]
+    return !item || item.box <= 1
+  }).length
+  const isStruggling = availableLetterIds.length > 0 && weakLetterCount / availableLetterIds.length > 0.5
+
   const dayIndex = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 3)) % SESSION_SEQUENCES.length
-  const sessionDuJour = SESSION_SEQUENCES[dayIndex]
+  const sessionDuJour = isStruggling
+    ? [
+        { path: '/ecoute',   label: 'Écoute & Reconnais', emoji: '🎧', min: 5 },
+        { path: '/phonemes', label: 'Distingue les sons',  emoji: '👂', min: 5 },
+        { path: '/memory',   label: 'Memory des lettres',  emoji: '🧠', min: 5 },
+      ]
+    : SESSION_SEQUENCES[dayIndex]
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -97,9 +110,16 @@ export default function Modules() {
         initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
       >
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Clock className="h-5 w-5 opacity-80" />
-            <span className="font-black text-sm">جَلْسَةُ الْيَوْم — 15 دقيقة</span>
+            <span className="font-black text-sm">
+              {isStruggling ? 'مُرَاجَعَة مُكَثَّفَة — Révision ciblée' : 'جَلْسَةُ الْيَوْم — 15 دقيقة'}
+            </span>
+            {isStruggling && (
+              <span className="text-[10px] font-black bg-white/25 backdrop-blur px-2 py-0.5 rounded-full border border-white/30">
+                ✨ personnalisée
+              </span>
+            )}
           </div>
           {stats.streak > 0 && (
             <div className="flex items-center gap-1 bg-white/20 backdrop-blur px-3 py-1 rounded-full">

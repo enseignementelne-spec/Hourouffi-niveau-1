@@ -13,6 +13,17 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, RotateCcw, Trophy, Lock } from 'lucide-react'
 import { playSuccess, playError, playVictory, playPoints, playArabicFeedback, stopArabicFeedback } from '../utils/soundEffects'
 import { AuditingMetrics, estimateConfidence } from '../utils/auditingMetrics'
+import { normalizeAudioPath, speakTTS } from '../services/audioService'
+import { useAppStore } from '../store/useAppStore'
+
+const ENCOURAGEMENTS = [
+  { ar: 'رَائِع!',     fr: 'Formidable !' },
+  { ar: 'مُمْتَاز!',   fr: 'Excellent !'  },
+  { ar: 'أَحْسَنْتَ!', fr: 'Bravo !'      },
+  { ar: 'شَاطِر!',     fr: 'Tu es fort(e) !' },
+  { ar: 'جَمِيل!',     fr: 'Super !'      },
+  { ar: 'نَجَحْتَ!',   fr: 'Réussi !'     },
+]
 
 function buildOrderedPhonemes(availablePhonemes, srsItems, srsSessionCount) {
   if (availablePhonemes.length === 0) return []
@@ -53,6 +64,8 @@ export default function DistinctionPhonemes() {
   const [showConfetti, setShowConfetti] = useState(false)
   const [gameOver, setGameOver] = useState(false)
   const [targetIsFirst, setTargetIsFirst] = useState(() => Math.random() > 0.5)
+  const [missedPhonemes, setMissedPhonemes] = useState([])
+  const encouragementRef = useRef(ENCOURAGEMENTS[0])
 
   // Preload audios for performance
   const allAudioUrls = useMemo(() => {
@@ -117,6 +130,7 @@ export default function DistinctionPhonemes() {
     srsRecordAnswer(activeProfile.id, current.id, 'phoneme', correct)
 
     if (correct) {
+      encouragementRef.current = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)]
       setScore(s => s + 30)
       setShowConfetti(true)
       addPoints(30)
@@ -130,9 +144,19 @@ export default function DistinctionPhonemes() {
         metadata: { sessionId: sessionIdRef.current, responseTime, difficulty, confidence, phonemeId: current.id }
       })
     } else {
+      setMissedPhonemes(prev =>
+        prev.some(m => m.pairId === current.id) ? prev : [...prev, { pairId: current.id, lettre: target }]
+      )
       addResult(activeProfile.id, { type: 'phonemes', correct: false, phonemeId: current.id })
       playError()
       setTimeout(() => playArabicFeedback('retry'), 700)
+      const replayTarget = target
+      setTimeout(() => {
+        if (!useAppStore.getState().soundEnabled) return
+        const a = new Audio(normalizeAudioPath(replayTarget.audio))
+        a.volume = 0.85
+        a.play().catch(() => speakTTS(replayTarget.nom || replayTarget.caractere))
+      }, 900)
       AuditingMetrics.track({
         module: 'phonemes', type: 'error', component: 'DistinctionPhonemes',
         profileId: activeProfile.id, profileName: activeProfile.prenom,
@@ -165,6 +189,7 @@ export default function DistinctionPhonemes() {
     setIsCorrect(null)
     setGameOver(false)
     setTargetIsFirst(Math.random() > 0.5)
+    setMissedPhonemes([])
   }
 
   if (gameOver) {
@@ -178,6 +203,31 @@ export default function DistinctionPhonemes() {
             <Trophy className="h-8 w-8" /> {score}
           </div>
           <p className="text-slate-500 font-medium">نقطة من أصل {orderedPhonemes.length * 30}</p>
+
+          {missedPhonemes.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+              <p className="text-xs font-bold text-rose-500 uppercase tracking-wider mb-3">لِنُعِيدَ التَّدَرُّب — Sons à retravailler</p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {missedPhonemes.map(({ pairId, lettre }) => (
+                  <button
+                    key={pairId}
+                    onClick={() => {
+                      if (!useAppStore.getState().soundEnabled) return
+                      const a = new Audio(normalizeAudioPath(lettre.audio))
+                      a.volume = 0.85
+                      a.play().catch(() => speakTTS(lettre.nom || lettre.caractere))
+                    }}
+                    className="flex flex-col items-center gap-0.5 px-3 py-2 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors min-w-[64px]"
+                  >
+                    <span className="font-arabic text-2xl text-brand-700">{lettre.caractere}</span>
+                    <span className="text-[10px] text-slate-500 font-medium">{lettre.nom}</span>
+                    <span className="text-[9px] text-slate-400">{lettre.typeFr}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-400 mt-2">Clique pour réécouter le son 🔊</p>
+            </div>
+          )}
         </div>
         <div className="flex gap-3 justify-center">
           <button onClick={restart} className="flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 transition-colors">
@@ -268,20 +318,20 @@ export default function DistinctionPhonemes() {
           </div>
 
           {selected !== null && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className={`mt-6 p-3 rounded-xl font-bold text-sm ${isCorrect ? 'bg-emerald-50 text-emerald-600' : 'bg-coral-50 text-coral-600'}`}
-              dir="rtl"
-            >
-              {isCorrect
-                ? `✅ مُمْتَاز! الصواب: ${target.nom} (${target.caractere})`
-                : `❌ الإجابة الصحيحة: ${target.nom} (${target.caractere})`}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 space-y-2">
+              <div className={`p-3 rounded-xl font-bold text-sm ${isCorrect ? 'bg-emerald-50 text-emerald-600' : 'bg-coral-50 text-coral-600'}`}>
+                {isCorrect
+                  ? <span>✅ <span className="font-arabic text-base">{encouragementRef.current.ar}</span> — {encouragementRef.current.fr}</span>
+                  : <span dir="rtl">❌ الإجابة الصحيحة: <span className="font-arabic text-base">{target.nom}</span> ({target.caractere}) — {target.typeFr}</span>
+                }
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 rounded-xl p-3 text-right" dir="rtl">
+                <p className="text-xs text-slate-500 font-bold mb-0.5">💡 {current.astuce}</p>
+                <p className="text-[11px] text-slate-400 font-medium" dir="ltr">{current.astuceFr}</p>
+              </div>
             </motion.div>
           )}
 
-          <div className="mt-4 bg-slate-50 dark:bg-slate-900 p-3 rounded-xl text-right" dir="rtl">
-            <p className="text-xs text-slate-500 font-bold mb-1">💡 {current.astuce}</p>
-            <p className="text-[11px] text-slate-400 font-medium" dir="ltr">{current.astuceFr}</p>
-          </div>
         </motion.div>
       </AnimatePresence>
     </div>

@@ -48,7 +48,7 @@ export const comptines = [
     lignes: [
       { ar: 'قِطٌّ صَغِير يَقُول مِيَاو',          fr: 'Petit chat dit miaou',           emoji: '🐱', audio: 'audio/comptines/animaux/animaux_1.mp3' },
       { ar: 'كَلْبٌ وَفِيٌّ يَقُول هَاو',          fr: 'Chien fidèle dit ouaf',          emoji: '🐶', audio: 'audio/comptines/animaux/animaux_2.mp3' },
-      { ar: 'طَائِرٌ يَغْنِي فِي السَّمَاء',        fr: 'L\'oiseau chante dans le ciel', emoji: '🐦', audio: 'audio/comptines/animaux/animaux_3.mp3' },
+      { ar: 'طَائِرٌ يُغَنِّي فِي السَّمَاء',        fr: 'L\'oiseau chante dans le ciel', emoji: '🐦', audio: 'audio/comptines/animaux/animaux_3.mp3' },
       { ar: 'سَمَكٌ يَسْبَحُ فِي المَاء',           fr: 'Le poisson nage dans l\'eau',   emoji: '🐟', audio: 'audio/comptines/animaux/animaux_4.mp3' },
       { ar: 'أَرْنَبٌ يَقْفِزُ هُنَا وَهُنَاك',     fr: 'Le lapin saute par-ci par-là', emoji: '🐰', audio: 'audio/comptines/animaux/animaux_5.mp3' },
       { ar: 'دَجَاجَةٌ تَبْحَثُ عَنِ الطَّعَام',   fr: 'La poule cherche à manger',     emoji: '🐔', audio: 'audio/comptines/animaux/animaux_6.mp3' },
