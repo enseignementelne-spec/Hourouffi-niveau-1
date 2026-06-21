@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { useProfileStore } from '../store/useProfileStore'
 import { useGameStore } from '../store/useGameStore'
@@ -27,6 +27,36 @@ export default function FlashcardsVocabulaire() {
   const [revealed, setRevealed] = useState(false)
   const [direction, setDirection] = useState(1)
   const [seenCount, setSeenCount] = useState(0)
+  const [view, setView] = useState('flashcards')
+  const ytPlayerRef = useRef(null)
+
+  useEffect(() => {
+    if (view !== 'video' || !selectedCat?.youtube) return
+
+    const initPlayer = () => {
+      if (ytPlayerRef.current) return
+      ytPlayerRef.current = new window.YT.Player('yt-vocab-player', {
+        videoId: selectedCat.youtube,
+        width: '100%',
+        playerVars: { autoplay: 0, rel: 0, modestbranding: 1 },
+      })
+    }
+
+    if (window.YT && window.YT.Player) {
+      initPlayer()
+    } else {
+      window.onYouTubeIframeAPIReady = initPlayer
+      if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+        const tag = document.createElement('script')
+        tag.src = 'https://www.youtube.com/iframe_api'
+        document.head.appendChild(tag)
+      }
+    }
+
+    return () => {
+      if (ytPlayerRef.current) { ytPlayerRef.current.destroy(); ytPlayerRef.current = null }
+    }
+  }, [view, selectedCat])
 
   if (!activeProfile) return <Navigate to="/" replace />
 
@@ -46,7 +76,7 @@ export default function FlashcardsVocabulaire() {
           {categories.map((cat, i) => (
             <motion.button
               key={cat.id}
-              onClick={() => { setSelectedCat(cat); setCardIndex(0); setRevealed(false); setSeenCount(0) }}
+              onClick={() => { setSelectedCat(cat); setCardIndex(0); setRevealed(false); setSeenCount(0); setView('flashcards') }}
               className="bg-white dark:bg-slate-800 rounded-2xl card-shadow border border-slate-100 dark:border-slate-700 p-4 text-left hover:card-shadow-lg hover:border-brand-200 transition-all group"
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             >
@@ -67,6 +97,33 @@ export default function FlashcardsVocabulaire() {
 
   const mots = selectedCat.mots
   const mot = mots[cardIndex]
+
+  if (view === 'video' && selectedCat.youtube) {
+    return (
+      <div className="max-w-md mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <button onClick={() => { setSelectedCat(null); setView('flashcards') }} className="flex items-center gap-1.5 text-slate-400 hover:text-brand-600 font-bold text-sm">
+            <ArrowLeft className="h-4 w-4" /> الفئات
+          </button>
+          <span className="text-2xl">{selectedCat.emoji}</span>
+        </div>
+        <div className="text-center mb-4">
+          <h3 className="font-arabic text-2xl text-brand-700" dir="rtl">{selectedCat.nomAr}</h3>
+        </div>
+        <div className="flex gap-2 mb-5">
+          <button onClick={() => setView('flashcards')} className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-slate-100 dark:bg-slate-700 text-slate-500 transition-all">
+            🃏 Flashcards
+          </button>
+          <button className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-brand-600 text-white shadow-lg">
+            🎬 Vidéo
+          </button>
+        </div>
+        <div className="rounded-2xl overflow-hidden shadow-xl border border-slate-100 dark:border-slate-700 aspect-video">
+          <div id="yt-vocab-player" className="w-full h-full" />
+        </div>
+      </div>
+    )
+  }
   const fallbackImage = resolveAsset('/resources/images/placeholder-word.svg')
 
   const goTo = (dir) => {
@@ -112,6 +169,17 @@ export default function FlashcardsVocabulaire() {
         <h3 className="font-arabic text-2xl text-brand-700" dir="rtl">{selectedCat.nomAr}</h3>
         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{selectedCat.nom}</p>
       </div>
+
+      {selectedCat.youtube && (
+        <div className="flex gap-2 mb-4">
+          <button className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-brand-600 text-white shadow-lg">
+            🃏 Flashcards
+          </button>
+          <button onClick={() => setView('video')} className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-slate-100 dark:bg-slate-700 text-slate-500 transition-all">
+            🎬 Vidéo
+          </button>
+        </div>
+      )}
 
       {/* Card */}
       <AnimatePresence mode="wait">

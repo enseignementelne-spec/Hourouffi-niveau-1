@@ -61,9 +61,9 @@ const rawCategories = [
     ]
   },
   {
-    id: 'animaux', nom: 'Les animaux', nomAr: 'الحَيَوَانَات', emoji: '🐱',
+    id: 'animaux', nom: 'Les animaux', nomAr: 'الحَيَوَانَات', emoji: '🐱', youtube: 'V_APiGAl6Ds',
     mots: [
-      { fr: 'Chat',   ar: 'قِطّ',     tts: 'قِطٌّ',   translit: 'Qiṭṭ',   image: '/resources/images/vocabulaire/animaux-1.webp' },
+      { fr: 'Chat',   ar: 'قِطٌّ',    tts: 'قِطٌّ',   translit: 'Qiṭṭ',   image: '/resources/images/vocabulaire/animaux-1.webp' },
       { fr: 'Chien',  ar: 'كَلْب',    translit: 'Kalb',                    image: '/resources/images/vocabulaire/animaux-2.webp' },
       { fr: 'Oiseau', ar: 'طَائِر',   translit: "Ṭā'ir",                  image: '/resources/images/vocabulaire/animaux-3.webp' },
       { fr: 'Poisson',ar: 'سَمَك',    translit: 'Samak',                   image: '/resources/images/vocabulaire/animaux-4.webp' },
@@ -76,7 +76,7 @@ const rawCategories = [
     mots: [
       { fr: 'Papa',       ar: 'بَابَا / أَب', translit: 'Bābā',  image: '/resources/images/vocabulaire/famille-1.webp' },
       { fr: 'Maman',      ar: 'مَامَا / أُمّ', translit: 'Māmā',  image: '/resources/images/vocabulaire/famille-2.png'  },
-      { fr: 'Frère',      ar: 'أَخ',           translit: 'Akh',   image: '/resources/images/vocabulaire/famille-3.png'  },
+      { fr: 'Frère',      ar: 'أَخٌ',          translit: 'Akh',   image: '/resources/images/vocabulaire/famille-3.png'  },
       { fr: 'Sœur',       ar: 'أُخْت',         translit: 'Ukht',  image: '/resources/images/vocabulaire/famille-4.png'  },
       { fr: 'Grand-père', ar: 'جَدّ',   tts: 'جَدْ',     translit: 'Jadd',  image: '/resources/images/vocabulaire/famille-5.png'  },
       { fr: 'Grand-mère', ar: 'جَدَّة', tts: 'جَدَّةٌ',  translit: 'Jadda', image: '/resources/images/vocabulaire/famille-6.png'  },
