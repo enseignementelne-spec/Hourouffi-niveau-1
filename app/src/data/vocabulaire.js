@@ -46,7 +46,7 @@ const rawCategories = [
     ]
   },
   {
-    id: 'classe', nom: 'Objets de la classe', nomAr: 'أَدَوَاتُ الفَصْل', emoji: '📚',
+    id: 'classe', nom: 'Objets de la classe', nomAr: 'أَدَوَاتُ الفَصْل', emoji: '📚', youtube: 'RXFixbghMxI',
     mots: [
       { fr: 'Livre',  ar: 'كِتَاب',   translit: 'Kitāb',   image: '/resources/images/vocabulaire/classe-1.webp' },
       { fr: 'Crayon', ar: 'قَلَم',    translit: 'Qalam',   image: '/resources/images/vocabulaire/classe-2.webp' },
