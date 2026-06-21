@@ -91,7 +91,7 @@ const rawCategories = [
     ]
   },
   {
-    id: 'corps', nom: 'Le corps', nomAr: 'جِسْمُ الإِنْسَان', emoji: '🧍',
+    id: 'corps', nom: 'Le corps', nomAr: 'جِسْمُ الإِنْسَان', emoji: '🧍', youtube: 'xTFl8x3xjBo',
     mots: [
       { fr: 'Tête',   ar: 'رَأْس', translit: "Ra's", image: '/resources/images/vocabulaire/corps-1.svg' },
       { fr: 'Main',   ar: 'يَد',   translit: 'Yad',  image: '/resources/images/vocabulaire/corps-2.svg' },
