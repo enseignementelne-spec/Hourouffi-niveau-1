@@ -16,7 +16,7 @@ export const comptines = [
       { ar: 'أَصْفَرُ كَالشَّمْس',       fr: 'Jaune comme le soleil',       emoji: '☀️', audio: 'audio/comptines/couleurs/couleurs_4.mp3' },
       { ar: 'أَبْيَضُ كَالثَّلْج',       fr: 'Blanc comme la neige',        emoji: '❄️', audio: 'audio/comptines/couleurs/couleurs_5.mp3' },
       { ar: 'أَسْوَدُ كَاللَّيْل',       fr: 'Noir comme la nuit',          emoji: '🌙', audio: 'audio/comptines/couleurs/couleurs_6.mp3' },
-      { ar: 'هَيَّا نَغْنِي سَوِيًّا',   fr: 'Allons chanter ensemble !',   emoji: '🎵', audio: 'audio/comptines/couleurs/couleurs_7.mp3' },
+      { ar: 'هَيَّا نُغَنِّي سَوِيًّا',   fr: 'Allons chanter ensemble !',   emoji: '🎵', audio: 'audio/comptines/couleurs/couleurs_7.mp3' },
       { ar: 'الأَلْوَانُ جَمِيلَة',      fr: 'Les couleurs sont belles !',  emoji: '🌈', audio: 'audio/comptines/couleurs/couleurs_8.mp3' },
     ]
   },
